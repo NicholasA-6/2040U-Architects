@@ -1,5 +1,7 @@
 import csv
 
+filename = 'MOCK_DATA.csv'
+
 def parse_csv(filename):
     data = []
     with open(filename, mode='r', newline='', encoding='utf-8') as file:
@@ -8,6 +10,9 @@ def parse_csv(filename):
             data.append(row)
     return data
 
-filename = 'MOCK_DATA.csv'
-dict = parse_csv(filename)
-print(dict)
+def get_user(username):
+    data = parse_csv(filename)
+    for i in data:
+        if i[0] == username:
+            return i
+    return None
