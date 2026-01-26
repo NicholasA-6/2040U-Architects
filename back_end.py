@@ -23,3 +23,12 @@ def get_names():
     for i in data:
         newdata.append(i[0])
     return newdata
+
+# TODO: Don't run this, fix this code
+def add_to_file(username, age, country):
+    data = parse_csv(filename)
+    newdata = [username, age, country]
+    data.append(newdata)
+    with open(filename, 'a') as fd:
+        csvwriter = csv.writer(fd)
+        csvwriter.writerows(newdata)
