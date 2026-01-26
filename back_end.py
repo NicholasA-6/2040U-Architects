@@ -12,10 +12,11 @@ def parse_csv(filename):
 
 def get_user(username):
     data = parse_csv(filename)
+    newdata = []
     for i in data:
         if i[0] == username:
-            return i
-    return None
+            newdata.append(i)
+    return newdata
 
 def get_names():
     data = parse_csv(filename)
@@ -24,11 +25,10 @@ def get_names():
         newdata.append(i[0])
     return newdata
 
-# TODO: Don't run this, fix this code
 def add_to_file(username, age, country):
     data = parse_csv(filename)
     newdata = [username, age, country]
     data.append(newdata)
-    with open(filename, 'a') as fd:
+    with open(filename, 'w', newline='') as fd:
         csvwriter = csv.writer(fd)
-        csvwriter.writerows(newdata)
+        csvwriter.writerows(data)
