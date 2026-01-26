@@ -16,3 +16,10 @@ def get_user(username):
         if i[0] == username:
             return i
     return None
+
+def get_names():
+    data = parse_csv(filename)
+    newdata = []
+    for i in data:
+        newdata.append(i[0])
+    return newdata
