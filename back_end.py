@@ -32,3 +32,15 @@ def add_to_file(username, age, country):
     with open(filename, 'w', newline='') as fd:
         csvwriter = csv.writer(fd)
         csvwriter.writerows(data)
+
+def replace_user(user, userdata):
+    data = parse_csv(filename)
+    for i in data:
+        if i == user:
+            i[0] = userdata[0]
+            i[1] = userdata[1]
+            i[2] = userdata[2]
+            break
+    with open(filename, 'w', newline='') as fd:
+        csvwriter = csv.writer(fd)
+        csvwriter.writerows(data)
