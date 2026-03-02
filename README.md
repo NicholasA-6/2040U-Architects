@@ -5,7 +5,7 @@ Fawzan Shaikh – Technical Manager\
 Nick Allan – Project Manager\
 Rafay Farooqui – Backend Lead\
 Qadeer Khan – Frontend Lead\
-Liam Sheridan – Software Quality Lead\
+Liam Sheridan – Software Quality Lead
 ## Notable Features
 Role-based access control (Admin vs User)\
 Add, edit, and delete watches (Admin only)\
