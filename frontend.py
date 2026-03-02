@@ -1,13 +1,8 @@
 # imports
-import csv
-import os
+
 
 # get back_end functions
-from back_end import get_user, add_to_file, replace_user
-
-
-# instantiate items
-items = []
+from back_end import get_user, add_to_file, replace_user, get_all
 
 def input_int(message):
     while True:
@@ -28,19 +23,20 @@ def display_menu():
     print("1. View All Items\n2. View Item\n3. Add Item\n4. Edit Existing Item\n0. Exit")
     print("-"*25)
 
-def display_items():
+def display_items(items):
     if not items:
         print("no items")
         return
-    for item in items:
-        print(item)
+    for index, item in enumerate(items):
+        if index != 0:
+            print(f"Name: {item[0]}, Age: {item[1]}, Country: {item[2]}")
 
 # main loop
 while True:
     display_menu()
     choice = input("\nEnter your choice: ").strip()
     if choice == "1":
-        display_items()
+        display_items(get_all())
         input("Press ENTER to return back to menu")
     elif choice == "2":
         name = input("Please enter username to view: ")
@@ -53,15 +49,18 @@ while True:
         name = input("Please enter new username: ")
         age = input(f"Please enter age for user {name}: ")
         country = input(f"Please enter country for user {name}: ")
-        add_to_file(name, age, country)
-        print(f"User {name} added")
+        if len(name) == 0 or len(age) == 0 or len(country) == 0:
+            print(f"Invalid entry(s) detected, please don't enter blank entries!")
+        else:
+            add_to_file(name, age, country)
+            print(f"User {name} added")
     elif choice == "4":
         username = input("Please enter username to edit: ")
         data = get_user(username)
-        print(f"Found {len(data)} entries for {username}")
         if len(data) == 0:
             print("No users by that name")
         else:
+            print(f"Found {len(data)} entries for {username}")
             for i in data:
                 print(f"[1]\nName: {i[0]}\nAge: {i[1]}\nCountry: {i[2]}")
             if len(data) >= 2:

@@ -44,3 +44,7 @@ def replace_user(user, userdata):
     with open(filename, 'w', newline='') as fd:
         csvwriter = csv.writer(fd)
         csvwriter.writerows(data)
+
+def get_all():
+    data = parse_csv(filename)
+    return data
