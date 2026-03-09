@@ -10,7 +10,7 @@ def parse_csv(filename):
             data.append(row)
     return data
 
-def get_user(username):
+def get_user(username, filename = filename):
     data = parse_csv(filename)
     newdata = []
     for i in data:
@@ -25,7 +25,7 @@ def get_names():
         newdata.append(i[0])
     return newdata
 
-def add_to_file(username, age, country):
+def add_to_file(username, age, country, filename = filename):
     data = parse_csv(filename)
     newdata = [username, age, country]
     data.append(newdata)
