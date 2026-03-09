@@ -34,10 +34,9 @@ def test_replace_user():
     val3 = str(random.randint(0, 9999))
     val4 = str(random.randint(0, 9999))
     val5 = str(random.randint(0, 9999))
-    print(val1, val2, val3, val4, val5)
     with open("TEST_DATA.csv", "a") as file:
         file.write(f"{val1},{val2},{val3}")
-    back_end.replace_user([val1, val2, val3], [val1, val4, val5])
+    back_end.replace_user([val1, val2, val3], [val1, val4, val5], "TEST_DATA.csv")
     last_line = ""
     with open("TEST_DATA.csv", "r") as file:
         for line in file:

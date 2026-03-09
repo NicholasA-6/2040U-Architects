@@ -33,7 +33,7 @@ def add_to_file(username, age, country, filename = filename):
         csvwriter = csv.writer(fd)
         csvwriter.writerows(data)
 
-def replace_user(user, userdata):
+def replace_user(user, userdata, filename = filename):
     data = parse_csv(filename)
     for i in data:
         if i == user:
