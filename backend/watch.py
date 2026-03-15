@@ -1,50 +1,35 @@
-import csv
+#this class is for specifying the details that are in a watch
+class Watch:
+    def __init__(self, watch_id, name, brand, display_type, price, case_shape, certifications, image_url):
+        self.watch_id = watch_id
+        self.name = name
+        self.brand = brand
+        self.display_type = display_type
+        self.price = price
+        self.case_shape = case_shape
+        self.certifications = certifications
+        self.image_url = image_url
 
-filename = 'MOCK_DATA.csv'
-
-def parse_csv(filename):
-    data = []
-    with open(filename, mode='r', newline='', encoding='utf-8') as file:
-        reader = csv.reader(file)
-        for row in reader:
-            data.append(row)
-    return data
-
-def get_user(username):
-    data = parse_csv(filename)
-    newdata = []
-    for i in data:
-        if i[0] == username:
-            newdata.append(i)
-    return newdata
-
-def get_names():
-    data = parse_csv(filename)
-    newdata = []
-    for i in data:
-        newdata.append(i[0])
-    return newdata
-
-def add_to_file(username, age, country):
-    data = parse_csv(filename)
-    newdata = [username, age, country]
-    data.append(newdata)
-    with open(filename, 'w', newline='') as fd:
-        csvwriter = csv.writer(fd)
-        csvwriter.writerows(data)
-
-def replace_user(user, userdata):
-    data = parse_csv(filename)
-    for i in data:
-        if i == user:
-            i[0] = userdata[0]
-            i[1] = userdata[1]
-            i[2] = userdata[2]
-            break
-    with open(filename, 'w', newline='') as fd:
-        csvwriter = csv.writer(fd)
-        csvwriter.writerows(data)
-
-def get_all():
-    data = parse_csv(filename)
-    return data
+        def get_details(self):
+            return (
+                f"Watch ID: {self.watch_id}\n"
+                f"Name: {self.name}\n"
+                f"Brand: {self.brand}\n"
+                f"Display Type: {self.display_type}\n"
+                f"Price: {self.price}\n"
+                f"Certifications: {self.certifications}\n"
+                f"Image URL: {self.image_url}\n"
+            )
+        
+        #needed for editing details of the wathces
+        def update_details(self, watch_id, name, brand, display_type, price, case_shape, certifications, image_url):
+            self.name = name
+            self.brand = brand
+            self.display_type = display_type
+            self.price = price
+            self.case_shape = case_shape
+            self.certifications = certifications
+            self.image_url = image_url
+        
+        def __str__(self):
+            return f"{self.watch_id} - {self.name} ({self.brand}) - ${self.price}"

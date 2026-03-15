@@ -1,50 +1,12 @@
-import csv
+from backend.role import Role
+from backend.user import User
 
-filename = 'MOCK_DATA.csv'
+#adding the extra permissions into admin
+class Admin(User):
+    def __init__(self, user_id, username, password_hash, role=Role.User):
+        super().__init__(user_id, username, password_hash, role)
 
-def parse_csv(filename):
-    data = []
-    with open(filename, mode='r', newline='', encoding='utf-8') as file:
-        reader = csv.reader(file)
-        for row in reader:
-            data.append(row)
-    return data
-
-def get_user(username):
-    data = parse_csv(filename)
-    newdata = []
-    for i in data:
-        if i[0] == username:
-            newdata.append(i)
-    return newdata
-
-def get_names():
-    data = parse_csv(filename)
-    newdata = []
-    for i in data:
-        newdata.append(i[0])
-    return newdata
-
-def add_to_file(username, age, country):
-    data = parse_csv(filename)
-    newdata = [username, age, country]
-    data.append(newdata)
-    with open(filename, 'w', newline='') as fd:
-        csvwriter = csv.writer(fd)
-        csvwriter.writerows(data)
-
-def replace_user(user, userdata):
-    data = parse_csv(filename)
-    for i in data:
-        if i == user:
-            i[0] = userdata[0]
-            i[1] = userdata[1]
-            i[2] = userdata[2]
-            break
-    with open(filename, 'w', newline='') as fd:
-        csvwriter = csv.writer(fd)
-        csvwriter.writerows(data)
-
-def get_all():
-    data = parse_csv(filename)
-    return data
+    def add_watch(self, watch, catalogue):
+        if not self.loggedin:
+            raise PermissionError("Admin must be logged in before adding a watch")
+        catalogue.add_watch(watch)

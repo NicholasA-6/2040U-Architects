@@ -3,7 +3,7 @@ from backend.role import role
 
 #creating the user class
 class User:
-    def __init__(self, user_id, username, password_hash, role=role.User):
+    def __init__(self, user_id, username, password_hash, role = role.User):
         self.user_id = user_id
         self.username = username
         self.password_hash = password_hash
