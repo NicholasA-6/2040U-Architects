@@ -28,7 +28,7 @@ Wishlist, comparison, recommendations
 - Install dependencies: `pip install flask`
 
 ### Running the Application
-- 1. Navigate to the project directory.
+- 1. Navigate to the project directory (the one containing `app.py`).
 - 2. Run the app in terminal: `python app.py`
 - 3. Open your browser and go to http://localhost:5000 or click the link that says, "* Running on http://127.0.0.1:5000" in terminal
 - 4. Log in with username "user" (password: "1234") or "admin" (password: "admin123").
