@@ -9,16 +9,15 @@ class Role(Enum):
 
 # Represents one watch in the catalogue.
 class Watch:
-    def __init__(self, watch_id, name, brand, movement_type, display_type,
-                 price, case_shape, certifications, image_url):
+    def __init__(self, watch_id, name, brand, price, material,
+                 reference, condition, image_url):
         self.watch_id = watch_id
         self.name = name
         self.brand = brand
-        self.movement_type = movement_type
-        self.display_type = display_type
         self.price = price
-        self.case_shape = case_shape
-        self.certifications = certifications
+        self.material = material
+        self.reference = reference
+        self.condition = condition
         self.image_url = image_url
 
     def get_details(self):
@@ -26,11 +25,10 @@ class Watch:
             "watch_id": self.watch_id,
             "name": self.name,
             "brand": self.brand,
-            "movement_type": self.movement_type,
-            "display_type": self.display_type,
             "price": self.price,
-            "case_shape": self.case_shape,
-            "certifications": self.certifications,
+            "material": self.material,
+            "reference": self.reference,
+            "condition": self.condition,
             "image_url": self.image_url,
         }
 
@@ -121,10 +119,10 @@ class Catalogue:
         return [w for w in self.watches if
                 query in w.name.lower() or
                 query in w.brand.lower() or
-                query in w.certifications.lower()]
+                query in w.reference.lower()]
 
     def filter_watches(self, brand=None, min_price=None, max_price=None,
-                       movement_type=None, case_shape=None):
+                       material=None, condition=None):
         results = self.watches
         if brand:
             results = [w for w in results if w.brand.lower() == brand.lower()]
@@ -132,10 +130,10 @@ class Catalogue:
             results = [w for w in results if w.price >= min_price]
         if max_price is not None:
             results = [w for w in results if w.price <= max_price]
-        if movement_type:
-            results = [w for w in results if w.movement_type.lower() == movement_type.lower()]
-        if case_shape:
-            results = [w for w in results if w.case_shape.lower() == case_shape.lower()]
+        if material:
+            results = [w for w in results if w.material.lower() == material.lower()]
+        if condition:
+            results = [w for w in results if w.condition.lower() == condition.lower()]
         return results
 
 

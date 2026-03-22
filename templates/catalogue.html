@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chrono Vault - Catalogue</title>
+    <title>Watch Catalogue - Catalogue</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap');
 
@@ -339,8 +339,8 @@
         }
 
         .watch-card-image {
-            height: 200px;
-            background: linear-gradient(135deg, #141414, #1a1a1a);
+            height: 220px;
+            background: #fff;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -348,27 +348,20 @@
             overflow: hidden;
         }
 
-        .watch-card-image::before {
-            content: '';
-            position: absolute;
-            width: 120px;
-            height: 120px;
-            border: 2px solid rgba(184, 148, 81, 0.08);
-            border-radius: 50%;
+        .watch-card-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            padding: 10px;
+            transition: transform 0.35s ease;
         }
 
-        .watch-card-image::after {
-            content: '';
-            position: absolute;
-            width: 80px;
-            height: 80px;
-            border: 1px solid rgba(184, 148, 81, 0.12);
-            border-radius: 50%;
+        .watch-card:hover .watch-card-image img {
+            transform: scale(1.05);
         }
 
-        .watch-placeholder {
+        .watch-card-image .watch-placeholder {
             font-size: 48px;
-            z-index: 1;
             opacity: 0.5;
         }
 
@@ -703,6 +696,52 @@
             margin-bottom: 8px;
         }
 
+        /* ── Pagination ── */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            margin-top: 40px;
+            flex-wrap: wrap;
+        }
+
+        .page-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 40px;
+            height: 40px;
+            padding: 0 12px;
+            border: 1px solid rgba(184, 148, 81, 0.2);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.03);
+            color: #aaa;
+            font-family: 'Inter', sans-serif;
+            font-size: 13px;
+            text-decoration: none;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .page-btn:hover {
+            border-color: #b89451;
+            color: #b89451;
+            background: rgba(184, 148, 81, 0.08);
+        }
+
+        .page-btn.active {
+            background: #b89451;
+            border-color: #b89451;
+            color: #0a0a0a;
+            font-weight: 600;
+        }
+
+        .page-dots {
+            color: #555;
+            padding: 0 4px;
+        }
+
         /* ── Scrollbar ── */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
@@ -716,7 +755,7 @@
     <nav class="navbar">
         <a class="nav-brand" href="{{ url_for('catalogue_page') }}">
             <span class="nav-brand-icon">&#9201;</span>
-            <h1>Chrono Vault</h1>
+            <h1>Watch Catalogue</h1>
         </a>
         <div class="nav-right">
             <div class="nav-user">
@@ -739,11 +778,11 @@
 
     <!-- Filters -->
     <section class="filters-section">
-        <button class="filters-toggle {% if sel_brand or sel_movement or sel_case_shape or sel_min_price or sel_max_price %}active{% endif %}"
+        <button class="filters-toggle {% if sel_brand or sel_material or sel_condition or sel_min_price or sel_max_price %}active{% endif %}"
                 onclick="toggleFilters()">
             &#9881; Filters
         </button>
-        <form class="filters-panel {% if sel_brand or sel_movement or sel_case_shape or sel_min_price or sel_max_price %}open{% endif %}"
+        <form class="filters-panel {% if sel_brand or sel_material or sel_condition or sel_min_price or sel_max_price %}open{% endif %}"
               id="filtersPanel" method="GET" action="{{ url_for('catalogue_page') }}">
             <div class="filter-group">
                 <label>Brand</label>
@@ -755,20 +794,20 @@
                 </select>
             </div>
             <div class="filter-group">
-                <label>Movement</label>
-                <select name="movement">
+                <label>Material</label>
+                <select name="material">
                     <option value="">All</option>
-                    {% for m in movements %}
-                    <option value="{{ m }}" {% if sel_movement == m %}selected{% endif %}>{{ m }}</option>
+                    {% for m in materials %}
+                    <option value="{{ m }}" {% if sel_material == m %}selected{% endif %}>{{ m }}</option>
                     {% endfor %}
                 </select>
             </div>
             <div class="filter-group">
-                <label>Case Shape</label>
-                <select name="case_shape">
+                <label>Condition</label>
+                <select name="condition">
                     <option value="">All</option>
-                    {% for c in case_shapes %}
-                    <option value="{{ c }}" {% if sel_case_shape == c %}selected{% endif %}>{{ c }}</option>
+                    {% for c in conditions %}
+                    <option value="{{ c }}" {% if sel_condition == c %}selected{% endif %}>{{ c }}</option>
                     {% endfor %}
                 </select>
             </div>
@@ -790,7 +829,7 @@
     <!-- Catalogue -->
     <section class="catalogue-section">
         <div class="catalogue-header">
-            <div class="watch-count">Showing <span>{{ watches|length }}</span> timepiece{{ 's' if watches|length != 1 else '' }}</div>
+            <div class="watch-count">Showing <span>{{ watches|length }}</span> of <span>{{ total }}</span> timepiece{{ 's' if total != 1 else '' }}</div>
             {% if is_admin %}
             <button class="add-watch-btn" onclick="openAddModal()">+ Add Watch</button>
             {% endif %}
@@ -801,15 +840,18 @@
             {% for watch in watches %}
             <div class="watch-card" onclick="openDetailModal({{ watch.watch_id }})">
                 <div class="watch-card-image">
+                    {% if watch.image_url %}
+                    <img src="{{ watch.image_url }}" alt="{{ watch.name }}" loading="lazy">
+                    {% else %}
                     <span class="watch-placeholder">&#9201;</span>
+                    {% endif %}
                 </div>
                 <div class="watch-card-body">
                     <div class="watch-card-brand">{{ watch.brand }}</div>
                     <div class="watch-card-name">{{ watch.name }}</div>
                     <div class="watch-card-specs">
-                        <span class="spec-tag">{{ watch.movement_type }}</span>
-                        <span class="spec-tag">{{ watch.display_type }}</span>
-                        <span class="spec-tag">{{ watch.case_shape }}</span>
+                        <span class="spec-tag">{{ watch.material }}</span>
+                        <span class="spec-tag">{{ watch.condition }}</span>
                     </div>
                     <div class="watch-card-footer">
                         <span class="watch-price">${{ '{:,.2f}'.format(watch.price) }}</span>
@@ -824,6 +866,28 @@
             <div class="icon">&#9201;</div>
             <h3>No watches found</h3>
             <p>Try adjusting your search or filters.</p>
+        </div>
+        {% endif %}
+
+        {% if total_pages > 1 %}
+        <div class="pagination">
+            {% if page > 1 %}
+            <a href="?page={{ page - 1 }}&q={{ query }}&brand={{ sel_brand }}&material={{ sel_material }}&condition={{ sel_condition }}&min_price={{ sel_min_price }}&max_price={{ sel_max_price }}" class="page-btn">&laquo; Prev</a>
+            {% endif %}
+
+            {% for p in range(1, total_pages + 1) %}
+                {% if p == page %}
+                <span class="page-btn active">{{ p }}</span>
+                {% elif p <= 3 or p > total_pages - 3 or (p >= page - 2 and p <= page + 2) %}
+                <a href="?page={{ p }}&q={{ query }}&brand={{ sel_brand }}&material={{ sel_material }}&condition={{ sel_condition }}&min_price={{ sel_min_price }}&max_price={{ sel_max_price }}" class="page-btn">{{ p }}</a>
+                {% elif p == 4 or p == total_pages - 3 %}
+                <span class="page-dots">...</span>
+                {% endif %}
+            {% endfor %}
+
+            {% if page < total_pages %}
+            <a href="?page={{ page + 1 }}&q={{ query }}&brand={{ sel_brand }}&material={{ sel_material }}&condition={{ sel_condition }}&min_price={{ sel_min_price }}&max_price={{ sel_max_price }}" class="page-btn">Next &raquo;</a>
+            {% endif %}
         </div>
         {% endif %}
     </section>
@@ -873,20 +937,16 @@
                         <input type="text" id="fBrand" placeholder="Brand name">
                     </div>
                     <div class="form-group">
-                        <label>Movement Type</label>
-                        <input type="text" id="fMovement" placeholder="Automatic, Manual, Quartz...">
+                        <label>Material</label>
+                        <input type="text" id="fMaterial" placeholder="Stainless Steel, Gold...">
                     </div>
                     <div class="form-group">
-                        <label>Display Type</label>
-                        <input type="text" id="fDisplay" placeholder="Analog, Digital...">
+                        <label>Reference</label>
+                        <input type="text" id="fReference" placeholder="Ref number">
                     </div>
                     <div class="form-group">
-                        <label>Case Shape</label>
-                        <input type="text" id="fCaseShape" placeholder="Round, Square...">
-                    </div>
-                    <div class="form-group">
-                        <label>Certifications</label>
-                        <input type="text" id="fCerts" placeholder="COSC, METAS, None...">
+                        <label>Condition</label>
+                        <input type="text" id="fCondition" placeholder="New, Used, Unworn...">
                     </div>
                     <div class="form-group full">
                         <label>Image URL</label>
@@ -941,7 +1001,11 @@
             document.getElementById('detailTitle').textContent = data.name;
 
             const grid = document.getElementById('detailGrid');
+            const imgHtml = data.image_url
+                ? `<div class="detail-item full" style="justify-content:center;"><img src="${data.image_url}" alt="${data.name}" style="max-height:250px;object-fit:contain;border-radius:10px;background:#fff;padding:10px;"></div>`
+                : '';
             grid.innerHTML = `
+                ${imgHtml}
                 <div class="detail-item full">
                     <span class="detail-label">Price</span>
                     <span class="detail-value price">$${parseFloat(data.price).toLocaleString('en-US', {minimumFractionDigits: 2})}</span>
@@ -951,24 +1015,16 @@
                     <span class="detail-value">${data.brand}</span>
                 </div>
                 <div class="detail-item">
-                    <span class="detail-label">Watch ID</span>
-                    <span class="detail-value">#${data.watch_id}</span>
+                    <span class="detail-label">Reference</span>
+                    <span class="detail-value">${data.reference}</span>
                 </div>
                 <div class="detail-item">
-                    <span class="detail-label">Movement</span>
-                    <span class="detail-value">${data.movement_type}</span>
+                    <span class="detail-label">Material</span>
+                    <span class="detail-value">${data.material}</span>
                 </div>
                 <div class="detail-item">
-                    <span class="detail-label">Display</span>
-                    <span class="detail-value">${data.display_type}</span>
-                </div>
-                <div class="detail-item">
-                    <span class="detail-label">Case Shape</span>
-                    <span class="detail-value">${data.case_shape}</span>
-                </div>
-                <div class="detail-item">
-                    <span class="detail-label">Certifications</span>
-                    <span class="detail-value">${data.certifications || 'None'}</span>
+                    <span class="detail-label">Condition</span>
+                    <span class="detail-value">${data.condition}</span>
                 </div>
             `;
 
@@ -983,11 +1039,10 @@
             document.getElementById('fWatchId').disabled = false;
             document.getElementById('fName').value = '';
             document.getElementById('fBrand').value = '';
-            document.getElementById('fMovement').value = '';
-            document.getElementById('fDisplay').value = '';
             document.getElementById('fPrice').value = '';
-            document.getElementById('fCaseShape').value = '';
-            document.getElementById('fCerts').value = '';
+            document.getElementById('fMaterial').value = '';
+            document.getElementById('fReference').value = '';
+            document.getElementById('fCondition').value = '';
             document.getElementById('fImageUrl').value = '';
             document.getElementById('formModal').classList.add('open');
         }
@@ -1005,11 +1060,10 @@
             document.getElementById('fWatchId').disabled = true;
             document.getElementById('fName').value = data.name;
             document.getElementById('fBrand').value = data.brand;
-            document.getElementById('fMovement').value = data.movement_type;
-            document.getElementById('fDisplay').value = data.display_type;
             document.getElementById('fPrice').value = data.price;
-            document.getElementById('fCaseShape').value = data.case_shape;
-            document.getElementById('fCerts').value = data.certifications;
+            document.getElementById('fMaterial').value = data.material;
+            document.getElementById('fReference').value = data.reference;
+            document.getElementById('fCondition').value = data.condition;
             document.getElementById('fImageUrl').value = data.image_url;
             document.getElementById('formModal').classList.add('open');
         }
@@ -1020,11 +1074,10 @@
                 watch_id: parseInt(document.getElementById('fWatchId').value),
                 name: document.getElementById('fName').value.trim(),
                 brand: document.getElementById('fBrand').value.trim(),
-                movement_type: document.getElementById('fMovement').value.trim(),
-                display_type: document.getElementById('fDisplay').value.trim(),
                 price: parseFloat(document.getElementById('fPrice').value),
-                case_shape: document.getElementById('fCaseShape').value.trim(),
-                certifications: document.getElementById('fCerts').value.trim(),
+                material: document.getElementById('fMaterial').value.trim(),
+                reference: document.getElementById('fReference').value.trim(),
+                condition: document.getElementById('fCondition').value.trim(),
                 image_url: document.getElementById('fImageUrl').value.trim(),
             };
 

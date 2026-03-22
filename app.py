@@ -1,3 +1,5 @@
+import csv
+import os
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 from backend import Role, Watch, User, Admin, Catalogue, SessionManager
 
@@ -11,28 +13,32 @@ users = {
     "admin": Admin(2, "admin", "admin123"),
 }
 
-# Pre-load sample watches so the catalogue is not empty on first visit.
-sample_watches = [
-    Watch(1, "Submariner Date", "Rolex", "Automatic", "Analog",
-          9150.00, "Round", "COSC Certified", ""),
-    Watch(2, "Speedmaster Moonwatch", "Omega", "Manual-winding", "Analog",
-          6350.00, "Round", "METAS Certified", ""),
-    Watch(3, "Royal Oak", "Audemars Piguet", "Automatic", "Analog",
-          24500.00, "Octagonal", "None", ""),
-    Watch(4, "Nautilus", "Patek Philippe", "Automatic", "Analog",
-          35000.00, "Rounded Octagonal", "Patek Philippe Seal", ""),
-    Watch(5, "Santos de Cartier", "Cartier", "Automatic", "Analog",
-          7250.00, "Square", "None", ""),
-    Watch(6, "Big Pilot", "IWC", "Automatic", "Analog",
-          13500.00, "Round", "None", ""),
-    Watch(7, "Luminor Marina", "Panerai", "Automatic", "Analog",
-          8900.00, "Cushion", "None", ""),
-    Watch(8, "Reverso Classic", "Jaeger-LeCoultre", "Manual-winding", "Analog",
-          6800.00, "Rectangular", "None", ""),
-]
 
-for w in sample_watches:
-    catalogue.add_watch(w)
+def load_watches_from_csv(filepath):
+    """Load watches from the luxury watches CSV dataset."""
+    with open(filepath, newline="", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        for i, row in enumerate(reader, start=1):
+            try:
+                price = float(row.get("price", "0"))
+            except ValueError:
+                price = 0.0
+            watch = Watch(
+                watch_id=i,
+                name=row.get("name", "").strip(),
+                brand=row.get("brand", "").strip(),
+                price=price,
+                material=row.get("material", "").strip(),
+                reference=row.get("reference", "").strip(),
+                condition=row.get("condition", "").strip(),
+                image_url=row.get("image_url", "").strip(),
+            )
+            catalogue.add_watch(watch)
+
+
+# Load watches from CSV
+csv_path = os.path.join(os.path.dirname(__file__), "watches.csv")
+load_watches_from_csv(csv_path)
 
 
 @app.route("/")
@@ -78,44 +84,55 @@ def catalogue_page():
 
     query = request.args.get("q", "").strip()
     brand = request.args.get("brand", "").strip()
-    movement = request.args.get("movement", "").strip()
-    case_shape = request.args.get("case_shape", "").strip()
+    material = request.args.get("material", "").strip()
+    condition = request.args.get("condition", "").strip()
     min_price = request.args.get("min_price", "").strip()
     max_price = request.args.get("max_price", "").strip()
 
     if query:
         watches = catalogue.search_watches(query)
-    elif brand or movement or case_shape or min_price or max_price:
+    elif brand or material or condition or min_price or max_price:
         watches = catalogue.filter_watches(
             brand=brand or None,
-            movement_type=movement or None,
-            case_shape=case_shape or None,
+            material=material or None,
+            condition=condition or None,
             min_price=float(min_price) if min_price else None,
             max_price=float(max_price) if max_price else None,
         )
     else:
         watches = catalogue.get_all_watches()
 
+    # Pagination
+    page = request.args.get("page", 1, type=int)
+    per_page = 24
+    total = len(watches)
+    total_pages = max(1, (total + per_page - 1) // per_page)
+    page = max(1, min(page, total_pages))
+    paginated = watches[(page - 1) * per_page : page * per_page]
+
     # Collect unique values for filter dropdowns.
     all_watches = catalogue.get_all_watches()
     brands = sorted(set(w.brand for w in all_watches))
-    movements = sorted(set(w.movement_type for w in all_watches))
-    case_shapes = sorted(set(w.case_shape for w in all_watches))
+    materials = sorted(set(w.material for w in all_watches))
+    conditions = sorted(set(w.condition for w in all_watches))
 
     is_admin = session.get("role") == "ADMIN"
 
     return render_template(
         "catalogue.html",
-        watches=watches,
+        watches=paginated,
+        total=total,
+        page=page,
+        total_pages=total_pages,
         brands=brands,
-        movements=movements,
-        case_shapes=case_shapes,
+        materials=materials,
+        conditions=conditions,
         username=session["username"],
         is_admin=is_admin,
         query=query,
         sel_brand=brand,
-        sel_movement=movement,
-        sel_case_shape=case_shape,
+        sel_material=material,
+        sel_condition=condition,
         sel_min_price=min_price,
         sel_max_price=max_price,
     )
@@ -142,11 +159,10 @@ def add_watch():
             watch_id=int(data["watch_id"]),
             name=data["name"],
             brand=data["brand"],
-            movement_type=data["movement_type"],
-            display_type=data["display_type"],
             price=float(data["price"]),
-            case_shape=data["case_shape"],
-            certifications=data.get("certifications", ""),
+            material=data.get("material", ""),
+            reference=data.get("reference", ""),
+            condition=data.get("condition", ""),
             image_url=data.get("image_url", ""),
         )
         admin = users[session["username"]]
@@ -165,8 +181,8 @@ def edit_watch(watch_id):
     try:
         admin = users[session["username"]]
         kwargs = {}
-        for field in ["name", "brand", "movement_type", "display_type",
-                       "case_shape", "certifications", "image_url"]:
+        for field in ["name", "brand", "material", "reference",
+                       "condition", "image_url"]:
             if field in data:
                 kwargs[field] = data[field]
         if "price" in data:
