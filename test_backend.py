@@ -1,4 +1,4 @@
-from app import catalogue, add_watch
+import pytest
 from backend import *
 import random
 
@@ -39,7 +39,7 @@ class TestWatch:
 
     def test_watch_large_data(self):
         i = random_bytes(8, 999999)
-        watch = Watch(i[0], i[1], i[2], i[3], i[4], i[5], i[6], i[7])
+        Watch(i[0], i[1], i[2], i[3], i[4], i[5], i[6], i[7])
 
 class TestUser:
     def test_user_creation(self):
@@ -69,6 +69,60 @@ class TestCatalogue:
         catalogue = Catalogue()
         assert len(catalogue.watches) == 0
 
+    def test_catalogue_add_watch(self):
+        catalogue, watchlist = self.create_test_catalogue(1)
+        assert len(catalogue.watches) == 1
+        assert catalogue.watches[0].name == watchlist[0].name
+        catalogue.add_watch(watch_random_data(1))
+        catalogue.add_watch(watch_random_data(2))
+        assert len(catalogue.watches) == 3
+        with pytest.raises(ValueError, match=f"Watch with ID {watchlist[0].watch_id} already exists."):
+            catalogue.add_watch(watchlist[0])
+
+    def test_catalogue_edit_watch(self):
+        catalogue, watchlist = self.create_test_catalogue(2)
+        x = random_bytes(8, 8)
+        catalogue.edit_watch(0, name=x[1], material=x[4])
+        for watch in catalogue.watches:
+            if watch.watch_id == 0:
+                assert watch.name == x[1]
+                assert watch.material == x[4]
+        watch_id = 3
+        with pytest.raises(ValueError, match=f"Watch with ID {watch_id} not found."):
+            catalogue.edit_watch(watch_id)
+
+    def test_catalogue_delete_watch(self):
+        catalogue, watchlist = self.create_test_catalogue(2)
+        catalogue.delete_watch(1)
+        assert len(catalogue.watches) == 1
+        for checkwatch in catalogue.watches:
+            assert checkwatch != watchlist[1]
+        watch_id = 1
+        with pytest.raises(ValueError, match=f"Watch with ID {watch_id} not found."):
+            catalogue.delete_watch(watch_id)
+
+    def test_catalogue_get_watch(self):
+        catalogue, watchlist = self.create_test_catalogue(3)
+        assert catalogue.get_watch(0) == watchlist[0]
+        assert catalogue.get_watch(3) is None
+
+    def test_catalogue_get_all_watches(self):
+        catalogue, watchlist = self.create_test_catalogue(5)
+        assert catalogue.watches == watchlist
+
+    def test_catalogue_search_watches(self):
+        pass
+
+    @staticmethod
+    def create_test_catalogue(watchamount):
+        catalogue = Catalogue()
+        watchlist = []
+        for x in range(0, watchamount):
+            watch = watch_random_data(x)
+            watchlist.append(watch)
+            catalogue.add_watch(watch)
+        return catalogue, watchlist
+
 class TestAdmin:
     def test_admin_creation(self):
         Admin(None, None, None)
@@ -82,8 +136,7 @@ class TestAdmin:
 
     def test_admin_add_watch(self):
         catalogue = Catalogue()
-        i = random_bytes(8, 4)
-        watch = Watch(i[0], i[1], i[2], i[3], i[4], i[5], i[6], i[7])
+        watch = watch_random_data(0)
         j = random_bytes(3, 8)
         admin = Admin(j[0], j[1], j[2])
         try:
@@ -97,7 +150,22 @@ class TestAdmin:
         except PermissionError:
             raise Exception
 
+class TestSessionManager:
+    def test_sessionmanager_creation(self):
+        SessionManager()
 
+    def test_sessionmanager_init(self):
+        session = SessionManager()
+        assert session.current_user is None
+
+    def test_sessionmanager_login(self):
+        pass
+        # user = User(0, random_bytes())
+
+def watch_random_data(watch_id, bytes_amount=8):
+    i = random_bytes(8, bytes_amount)
+    watch = Watch(watch_id, i[1], i[2], i[3], i[4], i[5], i[6], i[7])
+    return watch
 
 def random_bytes(entries, n):
     i = []
