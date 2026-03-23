@@ -123,6 +123,7 @@ class TestCatalogue:
             catalogue.add_watch(watch)
         return catalogue, watchlist
 
+
 class TestAdmin:
     def test_admin_creation(self):
         Admin(None, None, None)
