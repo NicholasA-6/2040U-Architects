@@ -1,7 +1,7 @@
 import csv
 import os
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
-from backend import Role, Watch, User, Admin, Catalogue, SessionManager
+from backend import Role, Watch, User, Admin, Catalogue
 
 app = Flask(__name__)
 app.secret_key = "watch-catalogue-secret-key"
@@ -37,8 +37,8 @@ def load_watches_from_csv(filepath):
 
 
 # Load watches from CSV
-csv_path = os.path.join(os.path.dirname(__file__), "watches.csv")
-load_watches_from_csv(csv_path)
+# csv_path = os.path.join(os.path.dirname(__file__), "watches.csv")
+# load_watches_from_csv(csv_path)
 
 
 @app.route("/")
