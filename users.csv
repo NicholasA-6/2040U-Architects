@@ -1,0 +1,13 @@
+user_id,username,password,role
+1,user,1234,USER
+2,admin,admin123,ADMIN
+3,SomePerson,Hello,USER
+4,as,s,USER
+5,Fawzan,Pass,USER
+6,saf,13,USER
+7,daag,92,USER
+8,23,1234,USER
+9,New,jfasiaf,USER
+10,Fawzan2,Passf,USER
+11,Tester,10,USER
+12,FAd,sf,USER
