@@ -520,6 +520,62 @@
 
         .detail-item.full { grid-column: 1 / -1; }
 
+        .similar-section {
+            grid-column: 1 / -1;
+            margin-top: 24px;
+            padding-top: 22px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .similar-section h3 {
+            margin: 0 0 14px;
+            font-size: 16px;
+            color: #fff;
+            font-weight: 500;
+        }
+
+        .similar-grid {
+            display: grid;
+            gap: 12px;
+        }
+
+        .similar-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 16px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 14px;
+        }
+
+        .similar-meta {
+            display: grid;
+            gap: 4px;
+        }
+
+        .similar-brand {
+            font-size: 11px;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: #b89451;
+            font-weight: 600;
+        }
+
+        .similar-name {
+            font-size: 14px;
+            color: #e0e0e0;
+            line-height: 1.3;
+        }
+
+        .similar-price {
+            font-family: 'Playfair Display', serif;
+            font-size: 16px;
+            color: #fff;
+            font-weight: 600;
+        }
+
         .detail-label {
             font-size: 10px;
             letter-spacing: 1.5px;
@@ -1004,6 +1060,24 @@
             const imgHtml = data.image_url
                 ? `<div class="detail-item full" style="justify-content:center;"><img src="${data.image_url}" alt="${data.name}" style="max-height:250px;object-fit:contain;border-radius:10px;background:#fff;padding:10px;"></div>`
                 : '';
+
+            const similarHtml = (data.similar_watches && data.similar_watches.length)
+                ? `<div class="detail-item full similar-section">
+                        <h3>Similar Watches</h3>
+                        <div class="similar-grid">
+                            ${data.similar_watches.map(w => `
+                                <div class="similar-item">
+                                    <div class="similar-meta">
+                                        <span class="similar-brand">${w.brand}</span>
+                                        <span class="similar-name">${w.name}</span>
+                                    </div>
+                                    <span class="similar-price">$${parseFloat(w.price).toLocaleString('en-US', {minimumFractionDigits: 2})}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                   </div>`
+                : '';
+
             grid.innerHTML = `
                 ${imgHtml}
                 <div class="detail-item full">
@@ -1026,6 +1100,7 @@
                     <span class="detail-label">Condition</span>
                     <span class="detail-value">${data.condition}</span>
                 </div>
+                ${similarHtml}
             `;
 
             document.getElementById('detailModal').classList.add('open');
