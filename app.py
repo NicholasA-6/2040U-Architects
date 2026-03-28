@@ -8,10 +8,7 @@ app.secret_key = "watch-catalogue-secret-key"
 
 # Backend setup
 catalogue = Catalogue()
-users = {
-    "user": User(1, "user", "1234", Role.USER),
-    "admin": Admin(2, "admin", "admin123"),
-}
+users = {}
 
 
 def load_watches_from_csv(filepath):
@@ -73,9 +70,57 @@ def save_watches_to_csv(filepath, watches):
             })
 
 
-# Load watches from CSV
+def load_users_from_csv(filepath):
+    loaded_users = {}
+    if not os.path.exists(filepath):
+        return loaded_users
+
+    with open(filepath, newline="", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            username = row.get("username", "").strip()
+            password = row.get("password", "").strip()
+            role_value = row.get("role", "USER").strip().upper()
+            user_id = int(row.get("user_id", "0") or 0)
+            if not username:
+                continue
+            if role_value == Role.ADMIN.value:
+                loaded_users[username] = Admin(user_id or len(loaded_users) + 1, username, password)
+            else:
+                loaded_users[username] = User(user_id or len(loaded_users) + 1, username, password, Role.USER)
+    return loaded_users
+
+
+def save_users_to_csv(filepath, users_dict):
+    fieldnames = ["user_id", "username", "password", "role"]
+    with open(filepath, "w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        writer.writeheader()
+        for user in users_dict.values():
+            writer.writerow({
+                "user_id": user.user_id,
+                "username": user.username,
+                "password": user.password_hash,
+                "role": user.role.value,
+            })
+
+
+def initialize_users(filepath):
+    global users
+    users = load_users_from_csv(filepath)
+    if not users:
+        users = {
+            "user": User(1, "user", "1234", Role.USER),
+            "admin": Admin(2, "admin", "admin123"),
+        }
+        save_users_to_csv(filepath, users)
+
+
+# Load watches and users from CSV
 csv_path = os.path.join(os.path.dirname(__file__), "watches.csv")
+users_csv_path = os.path.join(os.path.dirname(__file__), "users.csv")
 load_watches_from_csv(csv_path)
+initialize_users(users_csv_path)
 
 
 @app.route("/")
@@ -102,7 +147,37 @@ def login():
         else:
             return render_template("login.html", error="Incorrect username or password.")
 
-    return render_template("login.html")
+    message = request.args.get("message")
+    return render_template("login.html", message=message)
+
+
+@app.route("/signup", methods=["POST"])
+def signup():
+    username = request.form.get("username", "").strip()
+    password = request.form.get("password", "").strip()
+
+    errors = {}
+
+    if not username:
+        errors["username"] = "Username is required."
+    if not password:
+        errors["password"] = "Password is required."
+    if username in users:
+        errors["username"] = "That username is already taken."
+
+    if errors:
+        return render_template(
+            "login.html",
+            show_signup=True,
+            errors=errors,
+            username=username
+        )
+
+    next_id = max((user.user_id for user in users.values()), default=0) + 1
+    users[username] = User(next_id, username, password, Role.USER)
+    save_users_to_csv(users_csv_path, users)
+
+    return redirect(url_for("login", message="Account created successfully. Please sign in."))
 
 
 @app.route("/logout")
