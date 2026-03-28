@@ -1,7 +1,7 @@
 import csv
 import os
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
-from backend import Role, Watch, User, Admin, Catalogue
+from backend import Role, Watch, User, Admin, Catalogue, SessionManager
 
 app = Flask(__name__)
 app.secret_key = "watch-catalogue-secret-key"
@@ -23,8 +23,18 @@ def load_watches_from_csv(filepath):
                 price = float(row.get("price", "0"))
             except ValueError:
                 price = 0.0
+
+            watch_id_value = row.get("watch_id")
+            if watch_id_value is not None and watch_id_value.strip() != "":
+                try:
+                    watch_id = int(watch_id_value)
+                except ValueError:
+                    watch_id = i
+            else:
+                watch_id = i
+
             watch = Watch(
-                watch_id=i,
+                watch_id=watch_id,
                 name=row.get("name", "").strip(),
                 brand=row.get("brand", "").strip(),
                 price=price,
@@ -36,9 +46,36 @@ def load_watches_from_csv(filepath):
             catalogue.add_watch(watch)
 
 
+def save_watches_to_csv(filepath, watches):
+    fieldnames = [
+        "watch_id",
+        "name",
+        "brand",
+        "price",
+        "material",
+        "reference",
+        "condition",
+        "image_url",
+    ]
+    with open(filepath, "w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        writer.writeheader()
+        for watch in watches:
+            writer.writerow({
+                "watch_id": watch.watch_id,
+                "name": watch.name,
+                "brand": watch.brand,
+                "price": f"{watch.price}",
+                "material": watch.material,
+                "reference": watch.reference,
+                "condition": watch.condition,
+                "image_url": watch.image_url,
+            })
+
+
 # Load watches from CSV
-# csv_path = os.path.join(os.path.dirname(__file__), "watches.csv")
-# load_watches_from_csv(csv_path)
+csv_path = os.path.join(os.path.dirname(__file__), "watches.csv")
+load_watches_from_csv(csv_path)
 
 
 @app.route("/")
@@ -167,6 +204,7 @@ def add_watch():
         )
         admin = users[session["username"]]
         admin.add_watch(watch, catalogue)
+        save_watches_to_csv(csv_path, catalogue.get_all_watches())
         return jsonify({"success": True, "watch": watch.get_details()})
     except (ValueError, PermissionError) as e:
         return jsonify({"error": str(e)}), 400
@@ -188,6 +226,7 @@ def edit_watch(watch_id):
         if "price" in data:
             kwargs["price"] = float(data["price"])
         admin.edit_watch(watch_id, catalogue, **kwargs)
+        save_watches_to_csv(csv_path, catalogue.get_all_watches())
         watch = catalogue.get_watch(watch_id)
         return jsonify({"success": True, "watch": watch.get_details()})
     except (ValueError, PermissionError) as e:
@@ -202,6 +241,7 @@ def delete_watch(watch_id):
     try:
         admin = users[session["username"]]
         admin.delete_watch(watch_id, catalogue)
+        save_watches_to_csv(csv_path, catalogue.get_all_watches())
         return jsonify({"success": True})
     except (ValueError, PermissionError) as e:
         return jsonify({"error": str(e)}), 400
