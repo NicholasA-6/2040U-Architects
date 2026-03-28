@@ -116,6 +116,41 @@ def initialize_users(filepath):
         save_users_to_csv(filepath, users)
 
 
+def get_similar_watches(target_watch, all_watches, limit=3):
+    if target_watch is None:
+        return []
+
+    target_brand = (target_watch.brand or "").strip().lower()
+    target_material = (target_watch.material or "").strip().lower()
+    target_condition = (target_watch.condition or "").strip().lower()
+    target_price = target_watch.price or 0.0
+
+    scored_watches = []
+    for watch in all_watches:
+        if watch.watch_id == target_watch.watch_id:
+            continue
+
+        score = 0
+        if target_brand and (watch.brand or "").strip().lower() == target_brand:
+            score += 100
+        if target_material and (watch.material or "").strip().lower() == target_material:
+            score += 40
+        if target_condition and (watch.condition or "").strip().lower() == target_condition:
+            score += 20
+
+        if target_price > 0 and watch.price is not None:
+            price_diff = abs(watch.price - target_price)
+            if price_diff <= target_price * 0.2:
+                score += 10
+                score += max(0, int((target_price * 0.2 - price_diff) / (target_price * 0.02)))
+
+        if score > 0:
+                scored_watches.append((score, watch))
+
+    scored_watches.sort(key=lambda item: (-item[0], item[1].watch_id))
+    return [watch for _, watch in scored_watches[:limit]]
+
+
 # Load watches and users from CSV
 csv_path = os.path.join(os.path.dirname(__file__), "watches.csv")
 users_csv_path = os.path.join(os.path.dirname(__file__), "users.csv")
@@ -256,7 +291,9 @@ def get_watch(watch_id):
         return jsonify({"error": "Not logged in"}), 401
     watch = catalogue.get_watch(watch_id)
     if watch:
-        return jsonify(watch.get_details())
+        details = watch.get_details()
+        details["similar_watches"] = [w.get_details() for w in get_similar_watches(watch, catalogue.get_all_watches())]
+        return jsonify(details)
     return jsonify({"error": "Watch not found"}), 404
 
 
