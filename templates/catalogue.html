@@ -1081,8 +1081,8 @@
                 image_url: document.getElementById('fImageUrl').value.trim(),
             };
 
-            if (!payload.name || !payload.brand) {
-                showToast('Name and brand are required.', 'error');
+            if (!payload.name || !payload.brand || !payload.watch_id || !payload.price) {
+                showToast('Watch Id, Price, Name, and brand are required.', 'error');
                 return;
             }
 
