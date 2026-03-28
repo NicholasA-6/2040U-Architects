@@ -9,16 +9,15 @@ class Role(Enum):
 
 # Represents one watch in the catalogue.
 class Watch:
-    def __init__(self, watch_id, name, brand, movement_type, display_type,
-                 price, case_shape, certifications, image_url):
+    def __init__(self, watch_id, name, brand, price, material,
+                 reference, condition, image_url):
         self.watch_id = watch_id
         self.name = name
         self.brand = brand
-        self.movement_type = movement_type
-        self.display_type = display_type
         self.price = price
-        self.case_shape = case_shape
-        self.certifications = certifications
+        self.material = material
+        self.reference = reference
+        self.condition = condition
         self.image_url = image_url
 
     def get_details(self):
@@ -26,11 +25,10 @@ class Watch:
             "watch_id": self.watch_id,
             "name": self.name,
             "brand": self.brand,
-            "movement_type": self.movement_type,
-            "display_type": self.display_type,
             "price": self.price,
-            "case_shape": self.case_shape,
-            "certifications": self.certifications,
+            "material": self.material,
+            "reference": self.reference,
+            "condition": self.condition,
             "image_url": self.image_url,
         }
 
@@ -46,7 +44,6 @@ class User:
         self.password_hash = password_hash
         self.role = role
         self.logged_in = False
-        self.wishlist = []
 
     def login(self, username, password):
         if self.username == username and self.password_hash == password:
@@ -59,26 +56,6 @@ class User:
 
     def is_logged_in(self):
         return self.logged_in
-    
-    def add_to_wishlist(self, watch):
-        if watch not in self.wishlist:
-            self.wishlist.append(watch)
-
-    def remove_from_wishlist(self, watch_id):
-        for watch in self.wishlist:
-            if watch.watch_id == watch_id:
-                self.wishlist.remove(watch)
-                return True
-        return False
-
-    def get_wishlist(self):
-        return self.wishlist
-
-    def is_in_wishlist(self, watch_id):
-        for watch in self.wishlist:
-            if watch.watch_id == watch_id:
-                return True
-        return False
 
 
 # Admin can do extra actions like adding watches.
@@ -108,6 +85,9 @@ class Catalogue:
         self.watches = []
 
     def add_watch(self, watch):
+        if watch.watch_id < 0:
+            raise ValueError(f"Watch ID cannot be negative.")
+
         for existing_watch in self.watches:
             if existing_watch.watch_id == watch.watch_id:
                 raise ValueError(f"Watch with ID {watch.watch_id} already exists.")
@@ -142,10 +122,10 @@ class Catalogue:
         return [w for w in self.watches if
                 query in w.name.lower() or
                 query in w.brand.lower() or
-                query in w.certifications.lower()]
+                query in w.reference.lower()]
 
     def filter_watches(self, brand=None, min_price=None, max_price=None,
-                       movement_type=None, case_shape=None):
+                       material=None, condition=None):
         results = self.watches
         if brand:
             results = [w for w in results if w.brand.lower() == brand.lower()]
@@ -153,10 +133,10 @@ class Catalogue:
             results = [w for w in results if w.price >= min_price]
         if max_price is not None:
             results = [w for w in results if w.price <= max_price]
-        if movement_type:
-            results = [w for w in results if w.movement_type.lower() == movement_type.lower()]
-        if case_shape:
-            results = [w for w in results if w.case_shape.lower() == case_shape.lower()]
+        if material:
+            results = [w for w in results if w.material.lower() == material.lower()]
+        if condition:
+            results = [w for w in results if w.condition.lower() == condition.lower()]
         return results
 
 
