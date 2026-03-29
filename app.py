@@ -1,5 +1,6 @@
 import csv
 import os
+import re
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 from backend import Role, Watch, User, Admin, Catalogue, SessionManager
 
@@ -199,6 +200,17 @@ def signup():
         errors["password"] = "Password is required."
     if username in users:
         errors["username"] = "That username is already taken."
+
+    # Password restrictions
+    if password:
+        if len(password) < 8:
+            errors["password"] = "Password must be at least 8 characters."
+        elif not re.search(r"[A-Z]", password):
+            errors["password"] = "Password must include at least one uppercase letter."
+        elif not re.search(r"[a-z]", password):
+            errors["password"] = "Password must include at least one lowercase letter."
+        elif not re.search(r"\d", password):
+            errors["password"] = "Password must include at least one number."
 
     if errors:
         return render_template(
