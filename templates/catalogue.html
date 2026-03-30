@@ -695,6 +695,262 @@
         }
 
         /* ── Toast Notifications ── */
+        /* ── Wishlist Heart Button ── */
+        .heart-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(10,10,10,0.6);
+            border: none;
+            border-radius: 50%;
+            width: 34px;
+            height: 34px;
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s, background 0.2s;
+            z-index: 2;
+            line-height: 1;
+        }
+        .heart-btn:hover { transform: scale(1.2); background: rgba(30,30,30,0.9); }
+        .heart-btn.active { color: #e74c3c; }
+        .heart-btn:not(.active) { color: #666; }
+
+        /* ── Compare Checkbox ── */
+        .compare-btn {
+            background: none;
+            border: 1px solid #444;
+            border-radius: 4px;
+            color: #aaa;
+            font-size: 11px;
+            padding: 3px 8px;
+            cursor: pointer;
+            letter-spacing: 0.5px;
+            transition: all 0.2s;
+            text-transform: uppercase;
+        }
+        .compare-btn:hover { border-color: #b89451; color: #b89451; }
+        .compare-btn.active { border-color: #b89451; color: #b89451; background: rgba(184,148,81,0.12); }
+
+        /* ── Compare Bar ── */
+        .compare-bar {
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            background: #111;
+            border-top: 1px solid #b89451;
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            z-index: 1000;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+        }
+        .compare-bar.visible { transform: translateY(0); }
+        .compare-bar-items {
+            display: flex;
+            gap: 12px;
+            flex: 1;
+        }
+        .compare-chip {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 6px;
+            padding: 6px 10px;
+            font-size: 12px;
+            max-width: 180px;
+        }
+        .compare-chip-img {
+            width: 32px;
+            height: 32px;
+            object-fit: cover;
+            border-radius: 4px;
+            background: #fff;
+            flex-shrink: 0;
+        }
+        .compare-chip-name {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            color: #e0e0e0;
+            font-size: 11px;
+        }
+        .compare-chip-remove {
+            background: none;
+            border: none;
+            color: #666;
+            cursor: pointer;
+            font-size: 14px;
+            padding: 0 2px;
+            flex-shrink: 0;
+        }
+        .compare-chip-remove:hover { color: #ff6b7a; }
+        .compare-bar-actions { display: flex; gap: 10px; align-items: center; }
+        .compare-now-btn {
+            background: linear-gradient(135deg, #b89451, #d4a95a);
+            border: none;
+            border-radius: 6px;
+            color: #0a0a0a;
+            font-weight: 600;
+            font-size: 13px;
+            padding: 8px 20px;
+            cursor: pointer;
+            letter-spacing: 0.5px;
+            transition: opacity 0.2s;
+        }
+        .compare-now-btn:hover { opacity: 0.85; }
+        .compare-now-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .compare-clear-btn {
+            background: none;
+            border: 1px solid #444;
+            border-radius: 6px;
+            color: #888;
+            font-size: 12px;
+            padding: 7px 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .compare-clear-btn:hover { border-color: #ff6b7a; color: #ff6b7a; }
+
+        /* ── Wishlist Nav Badge ── */
+        .nav-wishlist-btn {
+            background: none;
+            border: 1px solid #333;
+            border-radius: 6px;
+            color: #e0e0e0;
+            padding: 6px 12px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+        .nav-wishlist-btn:hover { border-color: #b89451; color: #b89451; }
+        .wishlist-badge {
+            background: #e74c3c;
+            color: #fff;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: 600;
+            padding: 1px 6px;
+            min-width: 18px;
+            text-align: center;
+        }
+
+        /* ── Compare Modal ── */
+        .compare-modal .modal {
+            max-width: 900px;
+            width: 95vw;
+        }
+        .compare-table-wrap {
+            overflow-x: auto;
+        }
+        .compare-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        .compare-table th {
+            padding: 10px 14px;
+            text-align: center;
+            border-bottom: 1px solid #333;
+            color: #b89451;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            font-size: 11px;
+            text-transform: uppercase;
+        }
+        .compare-table td {
+            padding: 10px 14px;
+            text-align: center;
+            border-bottom: 1px solid #1e1e1e;
+            color: #e0e0e0;
+            vertical-align: middle;
+        }
+        .compare-table tr:last-child td { border-bottom: none; }
+        .compare-table td.row-label {
+            text-align: left;
+            color: #888;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+        .compare-table tr:hover td { background: rgba(255,255,255,0.02); }
+        .compare-table .watch-img-cell img {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+            border-radius: 8px;
+            background: #fff;
+            padding: 4px;
+        }
+        .compare-table .price-cell {
+            color: #b89451;
+            font-weight: 600;
+            font-size: 15px;
+        }
+        .compare-table th.remove-col {
+            color: #444;
+            cursor: pointer;
+        }
+        .compare-table th.remove-col:hover { color: #ff6b7a; }
+
+        /* ── Wishlist Modal ── */
+        .wishlist-modal .modal {
+            max-width: 800px;
+            width: 95vw;
+        }
+        .wishlist-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 16px;
+            margin-top: 4px;
+        }
+        .wishlist-item {
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 10px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: border-color 0.2s, transform 0.2s;
+            position: relative;
+        }
+        .wishlist-item:hover { border-color: #b89451; transform: translateY(-2px); }
+        .wishlist-item img {
+            width: 100%;
+            height: 140px;
+            object-fit: contain;
+            background: #fff;
+            padding: 8px;
+        }
+        .wishlist-item-body { padding: 10px 12px; }
+        .wishlist-item-brand { font-size: 10px; color: #b89451; text-transform: uppercase; letter-spacing: 1px; }
+        .wishlist-item-name { font-size: 13px; color: #e0e0e0; margin: 4px 0 6px; line-height: 1.3; }
+        .wishlist-item-price { font-size: 14px; color: #b89451; font-weight: 600; }
+        .wishlist-item-remove {
+            position: absolute;
+            top: 8px; right: 8px;
+            background: rgba(10,10,10,0.7);
+            border: none;
+            border-radius: 50%;
+            width: 28px; height: 28px;
+            cursor: pointer;
+            color: #ff6b7a;
+            font-size: 14px;
+            display: flex; align-items: center; justify-content: center;
+            transition: background 0.2s;
+        }
+        .wishlist-item-remove:hover { background: rgba(220,53,69,0.2); }
+        .wishlist-empty { text-align: center; color: #555; padding: 40px 0; font-size: 14px; }
+        .wishlist-empty .icon { font-size: 40px; margin-bottom: 12px; }
+
         .toast-container {
             position: fixed;
             top: 88px;
@@ -814,6 +1070,10 @@
             <h1>Watch Catalogue</h1>
         </a>
         <div class="nav-right">
+            <button class="nav-wishlist-btn" onclick="openWishlistModal()">
+                &#9829; Wishlist
+                <span class="wishlist-badge" id="wishlistBadge" {% if wishlist_count == 0 %}style="display:none"{% endif %}>{{ wishlist_count }}</span>
+            </button>
             <div class="nav-user">
                 <strong>{{ username }}</strong>
                 <span class="nav-role">{{ 'Admin' if is_admin else 'User' }}</span>
@@ -901,6 +1161,12 @@
                     {% else %}
                     <span class="watch-placeholder">&#9201;</span>
                     {% endif %}
+                    <button class="heart-btn {% if watch.watch_id in wishlist_ids %}active{% endif %}"
+                            id="heart-{{ watch.watch_id }}"
+                            onclick="event.stopPropagation(); toggleWishlist({{ watch.watch_id }}, this)"
+                            title="{% if watch.watch_id in wishlist_ids %}Remove from wishlist{% else %}Add to wishlist{% endif %}">
+                        &#9829;
+                    </button>
                 </div>
                 <div class="watch-card-body">
                     <div class="watch-card-brand">{{ watch.brand }}</div>
@@ -911,7 +1177,13 @@
                     </div>
                     <div class="watch-card-footer">
                         <span class="watch-price">${{ '{:,.2f}'.format(watch.price) }}</span>
-                        <button class="view-details-btn" onclick="event.stopPropagation(); openDetailModal({{ watch.watch_id }})">Details</button>
+                        <div style="display:flex;gap:6px;">
+                            <button class="compare-btn" id="cmp-{{ watch.watch_id }}"
+                                    onclick="event.stopPropagation(); toggleCompare({{ watch.watch_id }}, '{{ watch.name|replace("'","\\'")|replace('"','\\"') }}', '{{ watch.image_url }}', this)">
+                                + Compare
+                            </button>
+                            <button class="view-details-btn" onclick="event.stopPropagation(); openDetailModal({{ watch.watch_id }})">Details</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1011,6 +1283,44 @@
                     <button class="form-submit" onclick="submitWatchForm()">Save Watch</button>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Wishlist Modal -->
+    <div class="modal-overlay wishlist-modal" id="wishlistModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>&#9829; My Wishlist</h2>
+                <button class="modal-close" onclick="closeModal('wishlistModal')">&times;</button>
+            </div>
+            <div class="modal-body" id="wishlistBody">
+                <div class="wishlist-empty"><div class="icon">&#9825;</div>Your wishlist is empty.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Compare Modal -->
+    <div class="modal-overlay compare-modal" id="compareModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>Compare Watches</h2>
+                <button class="modal-close" onclick="closeModal('compareModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="compare-table-wrap">
+                    <table class="compare-table" id="compareTable"></table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Compare Bar -->
+    <div class="compare-bar" id="compareBar">
+        <div class="compare-bar-items" id="compareChips"></div>
+        <div class="compare-bar-actions">
+            <span style="color:#888;font-size:12px;" id="compareCount">0 / 4 selected</span>
+            <button class="compare-clear-btn" onclick="clearCompare()">Clear</button>
+            <button class="compare-now-btn" id="compareNowBtn" onclick="openCompareModal()" disabled>Compare Now</button>
         </div>
     </div>
 
@@ -1211,6 +1521,179 @@
             toast.textContent = message;
             container.appendChild(toast);
             setTimeout(() => toast.remove(), 3000);
+        }
+
+        /* ── Wishlist ── */
+        async function toggleWishlist(watchId, btn) {
+            const isActive = btn.classList.contains('active');
+            const method = isActive ? 'DELETE' : 'POST';
+            const res = await fetch(`/api/wishlist/${watchId}`, { method });
+            const data = await res.json();
+            if (data.success !== undefined) {
+                btn.classList.toggle('active', !isActive);
+                btn.title = !isActive ? 'Remove from wishlist' : 'Add to wishlist';
+                updateWishlistBadge(data.count);
+                showToast(isActive ? 'Removed from wishlist.' : 'Added to wishlist!', 'success');
+            }
+        }
+
+        function updateWishlistBadge(count) {
+            const badge = document.getElementById('wishlistBadge');
+            badge.textContent = count;
+            badge.style.display = count > 0 ? '' : 'none';
+        }
+
+        async function openWishlistModal() {
+            const res = await fetch('/api/wishlist');
+            const data = await res.json();
+            const body = document.getElementById('wishlistBody');
+
+            if (!data.watches || data.watches.length === 0) {
+                body.innerHTML = '<div class="wishlist-empty"><div class="icon">&#9825;</div>Your wishlist is empty.</div>';
+            } else {
+                body.innerHTML = `<div class="wishlist-grid">${data.watches.map(w => `
+                    <div class="wishlist-item" onclick="closeModal('wishlistModal'); openDetailModal(${w.watch_id})">
+                        ${w.image_url
+                            ? `<img src="${w.image_url}" alt="${w.name}">`
+                            : `<div style="height:140px;display:flex;align-items:center;justify-content:center;font-size:40px;background:#111;">&#9201;</div>`}
+                        <button class="wishlist-item-remove" onclick="event.stopPropagation(); removeFromWishlist(${w.watch_id}, this)" title="Remove">&#10005;</button>
+                        <div class="wishlist-item-body">
+                            <div class="wishlist-item-brand">${w.brand}</div>
+                            <div class="wishlist-item-name">${w.name}</div>
+                            <div class="wishlist-item-price">$${parseFloat(w.price).toLocaleString('en-US', {minimumFractionDigits: 2})}</div>
+                        </div>
+                    </div>`).join('')}</div>`;
+            }
+            document.getElementById('wishlistModal').classList.add('open');
+        }
+
+        async function removeFromWishlist(watchId, btn) {
+            const res = await fetch(`/api/wishlist/${watchId}`, { method: 'DELETE' });
+            const data = await res.json();
+            if (data.success !== undefined) {
+                // Remove the item card
+                btn.closest('.wishlist-item').remove();
+                updateWishlistBadge(data.count);
+                // Update heart on catalogue card if visible
+                const heartBtn = document.getElementById(`heart-${watchId}`);
+                if (heartBtn) heartBtn.classList.remove('active');
+                // Show empty state if no more items
+                const grid = document.querySelector('.wishlist-grid');
+                if (grid && grid.children.length === 0) {
+                    document.getElementById('wishlistBody').innerHTML =
+                        '<div class="wishlist-empty"><div class="icon">&#9825;</div>Your wishlist is empty.</div>';
+                }
+                showToast('Removed from wishlist.', 'success');
+            }
+        }
+
+        /* ── Compare ── */
+        const compareList = []; // [{id, name, imageUrl}]
+        const MAX_COMPARE = 4;
+
+        function toggleCompare(watchId, name, imageUrl, btn) {
+            const idx = compareList.findIndex(w => w.id === watchId);
+            if (idx !== -1) {
+                compareList.splice(idx, 1);
+                btn.classList.remove('active');
+                btn.textContent = '+ Compare';
+            } else {
+                if (compareList.length >= MAX_COMPARE) {
+                    showToast(`You can compare up to ${MAX_COMPARE} watches at once.`, 'error');
+                    return;
+                }
+                compareList.push({ id: watchId, name, imageUrl });
+                btn.classList.add('active');
+                btn.textContent = '✓ Compare';
+            }
+            renderCompareBar();
+        }
+
+        function renderCompareBar() {
+            const bar = document.getElementById('compareBar');
+            const chips = document.getElementById('compareChips');
+            const countEl = document.getElementById('compareCount');
+            const nowBtn = document.getElementById('compareNowBtn');
+
+            bar.classList.toggle('visible', compareList.length > 0);
+            countEl.textContent = `${compareList.length} / ${MAX_COMPARE} selected`;
+            nowBtn.disabled = compareList.length < 2;
+
+            chips.innerHTML = compareList.map(w => `
+                <div class="compare-chip">
+                    ${w.imageUrl
+                        ? `<img class="compare-chip-img" src="${w.imageUrl}" alt="${w.name}">`
+                        : `<div class="compare-chip-img" style="display:flex;align-items:center;justify-content:center;background:#111;font-size:18px;">&#9201;</div>`}
+                    <span class="compare-chip-name">${w.name}</span>
+                    <button class="compare-chip-remove" onclick="removeFromCompareBar(${w.id})">&#10005;</button>
+                </div>`).join('');
+        }
+
+        function removeFromCompareBar(watchId) {
+            const idx = compareList.findIndex(w => w.id === watchId);
+            if (idx !== -1) compareList.splice(idx, 1);
+            const btn = document.getElementById(`cmp-${watchId}`);
+            if (btn) { btn.classList.remove('active'); btn.textContent = '+ Compare'; }
+            renderCompareBar();
+        }
+
+        function clearCompare() {
+            while (compareList.length) {
+                const { id } = compareList.pop();
+                const btn = document.getElementById(`cmp-${id}`);
+                if (btn) { btn.classList.remove('active'); btn.textContent = '+ Compare'; }
+            }
+            renderCompareBar();
+        }
+
+        async function openCompareModal() {
+            if (compareList.length < 2) return;
+
+            // Fetch full details for each watch
+            const details = await Promise.all(
+                compareList.map(w => fetch(`/api/watch/${w.id}`).then(r => r.json()))
+            );
+
+            const fields = [
+                { label: 'Photo',      key: 'image_url',  type: 'img' },
+                { label: 'Price',      key: 'price',      type: 'price' },
+                { label: 'Brand',      key: 'brand' },
+                { label: 'Material',   key: 'material' },
+                { label: 'Reference',  key: 'reference' },
+                { label: 'Condition',  key: 'condition' },
+            ];
+
+            const table = document.getElementById('compareTable');
+            // Header row
+            const headRow = `<thead><tr>
+                <th></th>
+                ${details.map(w => `<th>
+                    <div style="font-family:'Playfair Display',serif;font-weight:600;font-size:13px;margin-bottom:2px;">${w.name}</div>
+                    <button onclick="removeFromCompare(${w.watch_id})" title="Remove" style="background:none;border:none;color:#555;cursor:pointer;font-size:12px;">&#10005; Remove</button>
+                </th>`).join('')}
+            </tr></thead>`;
+
+            const bodyRows = fields.map(f => `<tr>
+                <td class="row-label">${f.label}</td>
+                ${details.map(w => {
+                    if (f.type === 'img') return `<td class="watch-img-cell">${w.image_url ? `<img src="${w.image_url}" alt="${w.name}">` : '&#9201;'}</td>`;
+                    if (f.type === 'price') return `<td class="price-cell">$${parseFloat(w.price).toLocaleString('en-US', {minimumFractionDigits: 2})}</td>`;
+                    return `<td>${w[f.key] || '—'}</td>`;
+                }).join('')}
+            </tr>`).join('');
+
+            table.innerHTML = headRow + `<tbody>${bodyRows}</tbody>`;
+            document.getElementById('compareModal').classList.add('open');
+        }
+
+        function removeFromCompare(watchId) {
+            removeFromCompareBar(watchId);
+            if (compareList.length < 2) {
+                closeModal('compareModal');
+                showToast('Need at least 2 watches to compare.', 'error');
+            } else {
+                openCompareModal();
+            }
         }
     </script>
 </body>

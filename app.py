@@ -236,6 +236,39 @@ def logout():
     return redirect(url_for("login"))
 
 
+@app.route("/api/wishlist")
+def get_wishlist():
+    if "username" not in session:
+        return jsonify({"error": "Not logged in"}), 401
+    ids = session.get("wishlist", [])
+    watches = [w.get_details() for wid in ids if (w := catalogue.get_watch(wid))]
+    return jsonify({"watches": watches})
+
+
+@app.route("/api/wishlist/<int:watch_id>", methods=["POST"])
+def add_to_wishlist(watch_id):
+    if "username" not in session:
+        return jsonify({"error": "Not logged in"}), 401
+    if not catalogue.get_watch(watch_id):
+        return jsonify({"error": "Watch not found"}), 404
+    wishlist = session.get("wishlist", [])
+    if watch_id not in wishlist:
+        wishlist.append(watch_id)
+        session["wishlist"] = wishlist
+    return jsonify({"success": True, "count": len(wishlist)})
+
+
+@app.route("/api/wishlist/<int:watch_id>", methods=["DELETE"])
+def remove_from_wishlist(watch_id):
+    if "username" not in session:
+        return jsonify({"error": "Not logged in"}), 401
+    wishlist = session.get("wishlist", [])
+    if watch_id in wishlist:
+        wishlist.remove(watch_id)
+        session["wishlist"] = wishlist
+    return jsonify({"success": True, "count": len(wishlist)})
+
+
 @app.route("/catalogue")
 def catalogue_page():
     if "username" not in session:
@@ -276,6 +309,7 @@ def catalogue_page():
     conditions = sorted(set(w.condition for w in all_watches))
 
     is_admin = session.get("role") == "ADMIN"
+    wishlist_ids = session.get("wishlist", [])
 
     return render_template(
         "catalogue.html",
@@ -294,6 +328,8 @@ def catalogue_page():
         sel_condition=condition,
         sel_min_price=min_price,
         sel_max_price=max_price,
+        wishlist_ids=wishlist_ids,
+        wishlist_count=len(wishlist_ids),
     )
 
 
