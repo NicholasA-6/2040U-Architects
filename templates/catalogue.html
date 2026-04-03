@@ -293,6 +293,33 @@
 
         .watch-count span { color: #b89451; font-weight: 500; }
 
+        .sort-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #ccc;
+        }
+
+        .sort-container label {
+            font-weight: 500;
+        }
+
+        .sort-container select {
+            padding: 6px 10px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 6px;
+            color: #e0e0e0;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .sort-container select:focus {
+            outline: none;
+            border-color: #b89451;
+        }
+
         .add-watch-btn {
             display: inline-flex;
             align-items: center;
@@ -1146,6 +1173,17 @@
     <section class="catalogue-section">
         <div class="catalogue-header">
             <div class="watch-count">Showing <span>{{ watches|length }}</span> of <span>{{ total }}</span> timepiece{{ 's' if total != 1 else '' }}</div>
+            <div class="sort-container">
+                <label for="sort-select">Sort by:</label>
+                <select id="sort-select" onchange="updateSort(this.value)">
+                    <option value="" {% if not sel_sort %}selected{% endif %}>Default</option>
+                    <option value="price_low" {% if sel_sort == "price_low" %}selected{% endif %}>Price: Low to High</option>
+                    <option value="price_high" {% if sel_sort == "price_high" %}selected{% endif %}>Price: High to Low</option>
+                    <option value="brand_az" {% if sel_sort == "brand_az" %}selected{% endif %}>Brand: A–Z</option>
+                    <option value="brand_za" {% if sel_sort == "brand_za" %}selected{% endif %}>Brand: Z–A</option>
+                    <option value="condition" {% if sel_sort == "condition" %}selected{% endif %}>Condition</option>
+                </select>
+            </div>
             {% if is_admin %}
             <button class="add-watch-btn" onclick="openAddModal()">+ Add Watch</button>
             {% endif %}
@@ -1337,6 +1375,17 @@
             const btn = document.querySelector('.filters-toggle');
             panel.classList.toggle('open');
             btn.classList.toggle('active');
+        }
+
+        /* ── Sort ── */
+        function updateSort(sortValue) {
+            const url = new URL(window.location);
+            if (sortValue) {
+                url.searchParams.set('sort', sortValue);
+            } else {
+                url.searchParams.delete('sort');
+            }
+            window.location = url;
         }
 
         /* ── Modals ── */
