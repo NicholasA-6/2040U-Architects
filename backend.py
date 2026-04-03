@@ -38,12 +38,13 @@ class Watch:
 
 # Base user class.
 class User:
-    def __init__(self, user_id, username, password_hash, role=Role.USER):
+    def __init__(self, user_id, username, password_hash, role=Role.USER, wishlist=None):
         self.user_id = user_id
         self.username = username
         self.password_hash = password_hash
         self.role = role
         self.logged_in = False
+        self.wishlist = wishlist if wishlist is not None else []
 
     def login(self, username, password):
         if self.username == username and self.password_hash == password:
@@ -60,8 +61,8 @@ class User:
 
 # Admin can do extra actions like adding watches.
 class Admin(User):
-    def __init__(self, user_id, username, password_hash):
-        super().__init__(user_id, username, password_hash, Role.ADMIN)
+    def __init__(self, user_id, username, password_hash, wishlist=None):
+        super().__init__(user_id, username, password_hash, Role.ADMIN, wishlist)
 
     def add_watch(self, watch, catalogue):
         if not self.logged_in:
