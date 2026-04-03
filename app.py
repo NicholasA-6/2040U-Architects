@@ -83,17 +83,19 @@ def load_users_from_csv(filepath):
             password = row.get("password", "").strip()
             role_value = row.get("role", "USER").strip().upper()
             user_id = int(row.get("user_id", "0") or 0)
+            wishlist_str = row.get("wishlist", "").strip()
+            wishlist = [int(wid) for wid in wishlist_str.split(",") if wid.strip()] if wishlist_str else []
             if not username:
                 continue
             if role_value == Role.ADMIN.value:
-                loaded_users[username] = Admin(user_id or len(loaded_users) + 1, username, password)
+                loaded_users[username] = Admin(user_id or len(loaded_users) + 1, username, password, wishlist)
             else:
-                loaded_users[username] = User(user_id or len(loaded_users) + 1, username, password, Role.USER)
+                loaded_users[username] = User(user_id or len(loaded_users) + 1, username, password, Role.USER, wishlist)
     return loaded_users
 
 
 def save_users_to_csv(filepath, users_dict):
-    fieldnames = ["user_id", "username", "password", "role"]
+    fieldnames = ["user_id", "username", "password", "role", "wishlist"]
     with open(filepath, "w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()
@@ -103,6 +105,7 @@ def save_users_to_csv(filepath, users_dict):
                 "username": user.username,
                 "password": user.password_hash,
                 "role": user.role.value,
+                "wishlist": ",".join(str(watchId) for watchId in user.wishlist),
             })
 
 
@@ -111,8 +114,8 @@ def initialize_users(filepath):
     users = load_users_from_csv(filepath)
     if not users:
         users = {
-            "user": User(1, "user", "1234", Role.USER),
-            "admin": Admin(2, "admin", "admin123"),
+            "user": User(1, "user", "1234", Role.USER, []),
+            "admin": Admin(2, "admin", "admin123", []),
         }
         save_users_to_csv(filepath, users)
 
@@ -179,6 +182,7 @@ def login():
         if user.login(username, password):
             session["username"] = username
             session["role"] = user.role.value
+            session["wishlist"] = user.wishlist.copy()  # Load user's wishlist into session
             return redirect(url_for("catalogue_page"))
         else:
             return render_template("login.html", error="Incorrect username or password.")
@@ -221,7 +225,7 @@ def signup():
         )
 
     next_id = max((user.user_id for user in users.values()), default=0) + 1
-    users[username] = User(next_id, username, password, Role.USER)
+    users[username] = User(next_id, username, password, Role.USER, [])
     save_users_to_csv(users_csv_path, users)
 
     return redirect(url_for("login", message="Account created successfully. Please sign in."))
@@ -255,6 +259,10 @@ def add_to_wishlist(watch_id):
     if watch_id not in wishlist:
         wishlist.append(watch_id)
         session["wishlist"] = wishlist
+        # Update user's wishlist and save
+        username = session["username"]
+        users[username].wishlist = wishlist.copy()
+        save_users_to_csv(users_csv_path, users)
     return jsonify({"success": True, "count": len(wishlist)})
 
 
@@ -266,6 +274,10 @@ def remove_from_wishlist(watch_id):
     if watch_id in wishlist:
         wishlist.remove(watch_id)
         session["wishlist"] = wishlist
+        # Update user's wishlist and save
+        username = session["username"]
+        users[username].wishlist = wishlist.copy()
+        save_users_to_csv(users_csv_path, users)
     return jsonify({"success": True, "count": len(wishlist)})
 
 
