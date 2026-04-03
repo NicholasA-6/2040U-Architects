@@ -292,6 +292,7 @@ def catalogue_page():
     condition = request.args.get("condition", "").strip()
     min_price = request.args.get("min_price", "").strip()
     max_price = request.args.get("max_price", "").strip()
+    sort_by = request.args.get("sort", "").strip()
 
     if query:
         watches = catalogue.search_watches(query)
@@ -306,13 +307,26 @@ def catalogue_page():
     else:
         watches = catalogue.get_all_watches()
 
+    # Apply sorting
+    sorted_watches = watches.copy()
+    if sort_by == "price_low":
+        sorted_watches.sort(key=lambda w: w.price)
+    elif sort_by == "price_high":
+        sorted_watches.sort(key=lambda w: w.price, reverse=True)
+    elif sort_by == "brand_az":
+        sorted_watches.sort(key=lambda w: w.brand.lower())
+    elif sort_by == "brand_za":
+        sorted_watches.sort(key=lambda w: w.brand.lower(), reverse=True)
+    elif sort_by == "condition":
+        sorted_watches.sort(key=lambda w: w.condition.lower())
+
     # Pagination
     page = request.args.get("page", 1, type=int)
     per_page = 24
-    total = len(watches)
+    total = len(sorted_watches)
     total_pages = max(1, (total + per_page - 1) // per_page)
     page = max(1, min(page, total_pages))
-    paginated = watches[(page - 1) * per_page : page * per_page]
+    paginated = sorted_watches[(page - 1) * per_page : page * per_page]
 
     # Collect unique values for filter dropdowns.
     all_watches = catalogue.get_all_watches()
@@ -340,6 +354,7 @@ def catalogue_page():
         sel_condition=condition,
         sel_min_price=min_price,
         sel_max_price=max_price,
+        sel_sort=sort_by,
         wishlist_ids=wishlist_ids,
         wishlist_count=len(wishlist_ids),
     )
