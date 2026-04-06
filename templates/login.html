@@ -427,6 +427,12 @@
                     <span>New to the catalogue?</span>
                     <button type="button" class="secondary-btn" id="showSignupBtn">Sign Up</button>
                 </div>
+
+                <form method="POST" action="{{ url_for('login') }}" style="margin-top: 20px;">
+                    <input type="hidden" name="guest" value="true">
+                    <button type="submit" class="secondary-btn" style="width: 100%;">Continue as Guest</button>
+                </form>
+                <p style="text-align: center; font-size: 11px; color: #555; margin-top: 12px;">Guest access: Browse & filter watches, view reviews. No wishlist or review writing.</p>
             </div>
 
             <div id="signupSection" class="signup-card {% if not show_signup %}hidden{% endif %}">
@@ -501,3 +507,4 @@
 </body>
 
 </html>
+    
