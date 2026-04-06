@@ -1,8 +1,9 @@
 import csv
 import os
 import re
+from datetime import datetime, timezone
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
-from backend import Role, Watch, User, Admin, Catalogue, SessionManager
+from backend import Role, Watch, User, Admin, Catalogue, SessionManager, Review
 
 app = Flask(__name__)
 app.secret_key = "watch-catalogue-secret-key"
@@ -10,6 +11,8 @@ app.secret_key = "watch-catalogue-secret-key"
 # Backend setup
 catalogue = Catalogue()
 users = {}
+# reviews: {watch_id: [Review, ...]}
+reviews: dict[int, list] = {}
 
 
 def load_watches_from_csv(filepath):
@@ -106,6 +109,38 @@ def save_users_to_csv(filepath, users_dict):
             })
 
 
+def load_reviews_from_csv(filepath):
+    if not os.path.exists(filepath):
+        return
+    with open(filepath, newline="", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            try:
+                review = Review(
+                    review_id=int(row["review_id"]),
+                    watch_id=int(row["watch_id"]),
+                    username=row["username"].strip(),
+                    rating=int(row["rating"]),
+                    title=row["title"].strip(),
+                    body=row["body"].strip(),
+                    timestamp=row["timestamp"].strip(),
+                )
+                reviews.setdefault(review.watch_id, []).append(review)
+            except (KeyError, ValueError):
+                continue
+
+
+def save_reviews_to_csv(filepath):
+    fieldnames = ["review_id", "watch_id", "username", "rating", "title", "body", "timestamp"]
+    all_reviews = [r for bucket in reviews.values() for r in bucket]
+    all_reviews.sort(key=lambda r: r.review_id)
+    with open(filepath, "w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        writer.writeheader()
+        for r in all_reviews:
+            writer.writerow(r.to_dict())
+
+
 def initialize_users(filepath):
     global users
     users = load_users_from_csv(filepath)
@@ -152,11 +187,13 @@ def get_similar_watches(target_watch, all_watches, limit=3):
     return [watch for _, watch in scored_watches[:limit]]
 
 
-# Load watches and users from CSV
+# Load watches, users, and reviews from CSV
 csv_path = os.path.join(os.path.dirname(__file__), "watches.csv")
 users_csv_path = os.path.join(os.path.dirname(__file__), "users.csv")
+reviews_csv_path = os.path.join(os.path.dirname(__file__), "reviews.csv")
 load_watches_from_csv(csv_path)
 initialize_users(users_csv_path)
+load_reviews_from_csv(reviews_csv_path)
 
 
 @app.route("/")
@@ -405,6 +442,88 @@ def delete_watch(watch_id):
         return jsonify({"success": True})
     except (ValueError, PermissionError) as e:
         return jsonify({"error": str(e)}), 400
+
+
+@app.route("/api/reviews/<int:watch_id>")
+def get_reviews(watch_id):
+    if "username" not in session:
+        return jsonify({"error": "Not logged in"}), 401
+    bucket = reviews.get(watch_id, [])
+    bucket_sorted = sorted(bucket, key=lambda r: r.timestamp, reverse=True)
+    current_user = session["username"]
+    user_review = next((r.to_dict() for r in bucket_sorted if r.username == current_user), None)
+    return jsonify({
+        "reviews": [r.to_dict() for r in bucket_sorted],
+        "user_review": user_review,
+        "average_rating": round(sum(r.rating for r in bucket) / len(bucket), 1) if bucket else None,
+    })
+
+
+@app.route("/api/reviews/<int:watch_id>", methods=["POST"])
+def submit_review(watch_id):
+    if "username" not in session:
+        return jsonify({"error": "Not logged in"}), 401
+    if not catalogue.get_watch(watch_id):
+        return jsonify({"error": "Watch not found"}), 404
+
+    data = request.get_json()
+    rating = data.get("rating")
+    title = (data.get("title") or "").strip()
+    body = (data.get("body") or "").strip()
+
+    if not isinstance(rating, int) or not (1 <= rating <= 5):
+        return jsonify({"error": "Rating must be 1–5."}), 400
+    if not title:
+        return jsonify({"error": "Title is required."}), 400
+    if not body:
+        return jsonify({"error": "Review body is required."}), 400
+
+    username = session["username"]
+    bucket = reviews.setdefault(watch_id, [])
+
+    # One review per user per watch — update if exists
+    existing = next((r for r in bucket if r.username == username), None)
+    if existing:
+        existing.rating = rating
+        existing.title = title
+        existing.body = body
+        existing.timestamp = datetime.now(timezone.utc).isoformat()
+        save_reviews_to_csv(reviews_csv_path)
+        return jsonify({"success": True, "review": existing.to_dict(), "updated": True})
+
+    next_id = max((r.review_id for bucket in reviews.values() for r in bucket), default=0) + 1
+    review = Review(
+        review_id=next_id,
+        watch_id=watch_id,
+        username=username,
+        rating=rating,
+        title=title,
+        body=body,
+        timestamp=datetime.now(timezone.utc).isoformat(),
+    )
+    bucket.append(review)
+    save_reviews_to_csv(reviews_csv_path)
+    return jsonify({"success": True, "review": review.to_dict(), "updated": False})
+
+
+@app.route("/api/reviews/<int:watch_id>", methods=["DELETE"])
+def delete_review(watch_id):
+    if "username" not in session:
+        return jsonify({"error": "Not logged in"}), 401
+
+    username = session["username"]
+    is_admin = session.get("role") == "ADMIN"
+    review_id = request.args.get("review_id", type=int)
+
+    bucket = reviews.get(watch_id, [])
+    for i, r in enumerate(bucket):
+        if r.review_id == review_id:
+            if r.username != username and not is_admin:
+                return jsonify({"error": "Cannot delete another user's review."}), 403
+            bucket.pop(i)
+            save_reviews_to_csv(reviews_csv_path)
+            return jsonify({"success": True})
+    return jsonify({"error": "Review not found."}), 404
 
 
 if __name__ == "__main__":

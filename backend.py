@@ -140,6 +140,28 @@ class Catalogue:
         return results
 
 
+class Review:
+    def __init__(self, review_id, watch_id, username, rating, title, body, timestamp):
+        self.review_id = review_id
+        self.watch_id = watch_id
+        self.username = username
+        self.rating = rating        # int 1–5
+        self.title = title
+        self.body = body
+        self.timestamp = timestamp  # ISO string
+
+    def to_dict(self):
+        return {
+            "review_id": self.review_id,
+            "watch_id": self.watch_id,
+            "username": self.username,
+            "rating": self.rating,
+            "title": self.title,
+            "body": self.body,
+            "timestamp": self.timestamp,
+        }
+
+
 # Tracks who is currently logged in.
 class SessionManager:
     def __init__(self):
