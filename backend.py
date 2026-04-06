@@ -3,6 +3,7 @@ from enum import Enum
 
 # Keeps the user roles clear and easy to check.
 class Role(Enum):
+    GUEST = "GUEST"
     USER = "USER"
     ADMIN = "ADMIN"
 
