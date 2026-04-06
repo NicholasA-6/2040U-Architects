@@ -211,6 +211,14 @@ def login():
     if request.method == "POST":
         username = request.form.get("username", "").strip()
         password = request.form.get("password", "").strip()
+        guest = request.form.get("guest")
+
+        # Guest login
+        if guest:
+            session["username"] = "Guest"
+            session["role"] = Role.GUEST.value
+            session["wishlist"] = []
+            return redirect(url_for("catalogue_page"))
 
         user = users.get(username)
         if user is None:
@@ -279,8 +287,8 @@ def logout():
 
 @app.route("/api/wishlist")
 def get_wishlist():
-    if "username" not in session:
-        return jsonify({"error": "Not logged in"}), 401
+    if "username" not in session or session.get("role") == Role.GUEST.value:
+        return jsonify({"error": "Not logged in or guest account"}), 401
     ids = session.get("wishlist", [])
     watches = [w.get_details() for wid in ids if (w := catalogue.get_watch(wid))]
     return jsonify({"watches": watches})
@@ -288,8 +296,8 @@ def get_wishlist():
 
 @app.route("/api/wishlist/<int:watch_id>", methods=["POST"])
 def add_to_wishlist(watch_id):
-    if "username" not in session:
-        return jsonify({"error": "Not logged in"}), 401
+    if "username" not in session or session.get("role") == Role.GUEST.value:
+        return jsonify({"error": "Not logged in or guest account"}), 401
     if not catalogue.get_watch(watch_id):
         return jsonify({"error": "Watch not found"}), 404
     wishlist = session.get("wishlist", [])
@@ -305,8 +313,8 @@ def add_to_wishlist(watch_id):
 
 @app.route("/api/wishlist/<int:watch_id>", methods=["DELETE"])
 def remove_from_wishlist(watch_id):
-    if "username" not in session:
-        return jsonify({"error": "Not logged in"}), 401
+    if "username" not in session or session.get("role") == Role.GUEST.value:
+        return jsonify({"error": "Not logged in or guest account"}), 401
     wishlist = session.get("wishlist", [])
     if watch_id in wishlist:
         wishlist.remove(watch_id)
@@ -483,6 +491,7 @@ def get_reviews(watch_id):
         "reviews": [r.to_dict() for r in bucket_sorted],
         "user_review": user_review,
         "average_rating": round(sum(r.rating for r in bucket) / len(bucket), 1) if bucket else None,
+        "is_guest": session.get("role") == Role.GUEST.value,
     })
 
 
@@ -490,6 +499,8 @@ def get_reviews(watch_id):
 def submit_review(watch_id):
     if "username" not in session:
         return jsonify({"error": "Not logged in"}), 401
+    if session.get("role") == Role.GUEST.value:
+        return jsonify({"error": "Guest accounts cannot submit reviews"}), 403
     if not catalogue.get_watch(watch_id):
         return jsonify({"error": "Watch not found"}), 404
 
@@ -537,6 +548,8 @@ def submit_review(watch_id):
 def delete_review(watch_id):
     if "username" not in session:
         return jsonify({"error": "Not logged in"}), 401
+    if session.get("role") == Role.GUEST.value:
+        return jsonify({"error": "Guest accounts cannot delete reviews"}), 403
 
     username = session["username"]
     is_admin = session.get("role") == "ADMIN"
