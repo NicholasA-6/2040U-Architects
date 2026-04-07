@@ -1202,13 +1202,15 @@
             <h1>Watch Catalogue</h1>
         </a>
         <div class="nav-right">
+            {% if session['role'] != 'GUEST' %}
             <button class="nav-wishlist-btn" onclick="openWishlistModal()">
                 &#9829; Wishlist
                 <span class="wishlist-badge" id="wishlistBadge" {% if wishlist_count == 0 %}style="display:none"{% endif %}>{{ wishlist_count }}</span>
             </button>
+            {% endif %}
             <div class="nav-user">
                 <strong>{{ username }}</strong>
-                <span class="nav-role">{{ 'Admin' if is_admin else 'User' }}</span>
+                <span class="nav-role">{{ 'Guest' if session['role'] == 'GUEST' else ('Admin' if is_admin else 'User') }}</span>
             </div>
             <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
         </div>
@@ -1286,7 +1288,7 @@
                     <option value="price_high" {% if sel_sort == "price_high" %}selected{% endif %}>Price: High to Low</option>
                     <option value="brand_az" {% if sel_sort == "brand_az" %}selected{% endif %}>Brand: A–Z</option>
                     <option value="brand_za" {% if sel_sort == "brand_za" %}selected{% endif %}>Brand: Z–A</option>
-                    <option value="condition" {% if sel_sort == "condition" %}selected{% endif %}>Condition</option>
+                    <option value="condition" {% if sel_sort == "condition" %}selected{% endif %}>Condition: New-Old</option>
                 </select>
             </div>
             {% if is_admin %}
@@ -1304,12 +1306,14 @@
                     {% else %}
                     <span class="watch-placeholder">&#9201;</span>
                     {% endif %}
+                    {% if session['role'] != 'GUEST' %}
                     <button class="heart-btn {% if watch.watch_id in wishlist_ids %}active{% endif %}"
                             id="heart-{{ watch.watch_id }}"
                             onclick="event.stopPropagation(); toggleWishlist({{ watch.watch_id }}, this)"
                             title="{% if watch.watch_id in wishlist_ids %}Remove from wishlist{% else %}Add to wishlist{% endif %}">
                         &#9829;
                     </button>
+                    {% endif %}
                 </div>
                 <div class="watch-card-body">
                     <div class="watch-card-brand">{{ watch.brand }}</div>
@@ -1857,6 +1861,7 @@
         /* ── Reviews ── */
         const currentUser = {{ session['username'] | tojson }};
         const isAdmin = {{ 'true' if is_admin else 'false' }};
+        const isGuest = {{ 'true' if session['role'] == 'GUEST' else 'false' }};
         let selectedRating = 0;
 
         function starsHtml(rating, small = false) {
@@ -1879,7 +1884,7 @@
 
         function renderReviews(watchId, data) {
             const section = document.getElementById('reviewsSection');
-            const { reviews, user_review, average_rating } = data;
+            const { reviews, user_review, average_rating, is_guest } = data;
 
             const avgHtml = average_rating !== null
                 ? `<div class="reviews-avg">${starsHtml(Math.round(average_rating))}
@@ -1887,7 +1892,12 @@
                 : `<p class="no-reviews">No reviews yet. Be the first!</p>`;
 
             // Form: show if no user review, else show "you reviewed" with option to edit
-            const formHtml = buildReviewForm(watchId, user_review);
+            // BUT: Don't show for guests
+            const formHtml = is_guest
+                ? `<div style="background: rgba(184, 148, 81, 0.1); border: 1px solid rgba(184, 148, 81, 0.3); padding: 12px 16px; border-radius: 10px; font-size: 13px; color: #b89451; text-align: center; margin: 16px 0;">
+                       Create an account to write and rate watches
+                   </div>`
+                : buildReviewForm(watchId, user_review);
 
             // Review list
             const listHtml = reviews.length
@@ -1902,7 +1912,9 @@
             `;
 
             // Re-attach star picker events
-            setupStarPicker(watchId, user_review ? user_review.rating : 0);
+            if (!is_guest) {
+                setupStarPicker(watchId, user_review ? user_review.rating : 0);
+            }
         }
 
         function buildReviewForm(watchId, userReview) {
