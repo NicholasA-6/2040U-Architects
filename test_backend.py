@@ -2,6 +2,7 @@ import pytest
 from backend import *
 import random
 
+# Tests for all watch sublasses
 class TestWatch:
     def test_watch_creation(self):
         Watch(None, None, None, None, None, None, None, None)
@@ -41,6 +42,7 @@ class TestWatch:
         i = random_bytes(8, 999999)
         Watch(i[0], i[1], i[2], i[3], i[4], i[5], i[6], i[7])
 
+# Tests each user function
 class TestUser:
     def test_user_creation(self):
         User(None, None, None, None)
@@ -61,6 +63,7 @@ class TestUser:
         assert user.logged_in is False
         assert user.login(i[1] + b"1", i[2]) is False
 
+# Tests all basic functionality (create, add, edit, delete, search)
 class TestCatalogue:
     def test_catalogue_creation(self):
         Catalogue()
@@ -123,7 +126,7 @@ class TestCatalogue:
             catalogue.add_watch(watch)
         return catalogue, watchlist
 
-
+# Test each admin function
 class TestAdmin:
     def test_admin_creation(self):
         Admin(None, None, None)
@@ -151,6 +154,7 @@ class TestAdmin:
         except PermissionError:
             raise Exception
 
+# Tests for session manager errors
 class TestSessionManager:
     def test_sessionmanager_creation(self):
         SessionManager()
@@ -163,11 +167,13 @@ class TestSessionManager:
         pass
         # user = User(0, random_bytes())
 
+# Generates a watch with random data
 def watch_random_data(watch_id, bytes_amount=8):
     i = random_bytes(8, bytes_amount)
     watch = Watch(watch_id, i[1], i[2], i[3], i[4], i[5], i[6], i[7])
     return watch
 
+# Generates a list of random byte strings
 def random_bytes(entries, n):
     i = []
     for x in range(0, entries):
