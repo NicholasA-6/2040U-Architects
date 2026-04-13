@@ -6,12 +6,21 @@ Nick Allan – Project Manager
 Rafay Farooqui – Backend Lead  
 Qadeer Khan – Frontend Lead  
 Liam Sheridan – Software Quality Lead
-## Set-up instructions
-* Clone the repo with `https://github.com/NicholasA-6/2040U-Architects`
-* Open the terminal and run `pip install flask`
-* Run `app.py`
-* Open the port given in the terminal
-* User and admin logins are given on the front page
+## Installation & Running
+
+## Live Demo
+https://two040u-architects-watch-catalogue.onrender.com
+
+## Run Locally
+1. pip install -r requirements.txt
+2. python app.py
+3. Open http://127.0.0.1:5000
+
+Optional (Windows/Linux build scripts available in /scripts)
+
+User-generated data (wishlists and reviews) is stored in CSV files; however, due to deployment limitations on the hosting platform, these changes are not guaranteed to persist across server restarts or redeployments.
+
+
 ## Notable Features
 Role-based access control (Admin vs User)  
 Add, edit, and delete watches (Admin only)  
@@ -21,15 +30,30 @@ Clean and consistent user interface
 Product is strictly a catalogue, not a marketplace, so no purchasing system or need to mention retailers  
 Wishlist, comparison, recommendations
 
-## How to Run 
+## Project Structure
 
-### Prerequisites
-- Python 3.x installed on your system
-- Install dependencies: `pip install flask`
-
-### Running the Application
-- 1. Navigate to the project directory (the one containing `app.py`).
-- 2. Run the app in terminal: `python app.py`
-- 3. Open your browser and go to http://localhost:5000 or click the link that says, "* Running on http://127.0.0.1:5000" in terminal
-- 4. Log in with username "user" (password: "1234") or "admin" (password: "admin123").
+```
+├── app.py                          # Main Flask application
+├── backend.py                      # Backend logic and data handling
+├── requirements.txt                # Python dependencies for deployment
+├── Procfile                        # Render deployment configuration
+├── data/                           # Runtime data files
+│   ├── users.csv                   # User credentials and roles
+│   ├── watches.csv                 # Watch catalogue data
+│   ├── reviews.csv                 # Product reviews data
+│   └── testdata.csv                # Sample test dataset
+├── Diagrams/                       # Project diagrams and documentation
+│   └── UML_Diagram.pdf             # UML class diagram
+├── old_stuff/                      # Archived or deprecated code
+│   └── old_frontend.py             # Previous frontend implementation
+├── scripts/                        # Build and utility scripts
+│   ├── build.sh                    # Unix/Linux build script
+│   └── build.bat                   # Windows build script
+├── templates/                      # HTML view templates
+│   ├── catalogue.html              # Main catalogue page
+│   └── login.html                  # Login page
+├── test_backend.py                 # Backend test suite
+├── test_frontend.py                # Frontend test suite
+└── README.md                       # Project documentation
+```
 
