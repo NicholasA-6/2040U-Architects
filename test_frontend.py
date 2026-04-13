@@ -1,6 +1,7 @@
 from app import *
 
-testdata_filepath = "./testdata.csv"
+testdata_filepath = os.path.join(os.path.dirname(__file__), "data", "testdata.csv")
+
 
 def test_load_watches_from_csv():
     load_watches_from_csv(testdata_filepath)

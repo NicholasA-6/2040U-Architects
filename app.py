@@ -6,7 +6,7 @@ from flask import Flask, render_template, request, redirect, url_for, session, j
 from backend import Role, Watch, User, Admin, Catalogue, Review
 
 app = Flask(__name__)
-app.secret_key = "watch-catalogue-secret-key"
+app.secret_key = os.environ.get("SECRET_KEY", "dev-key")
 
 # Backend setup
 catalogue = Catalogue()
@@ -233,9 +233,9 @@ def get_similar_watches(target_watch, all_watches, limit=3):
     return [watch for _, watch in scored_watches[:limit]]
 
 # Load watches, users, and reviews from CSV
-csv_path = os.path.join(os.path.dirname(__file__), "watches.csv")
-users_csv_path = os.path.join(os.path.dirname(__file__), "users.csv")
-reviews_csv_path = os.path.join(os.path.dirname(__file__), "reviews.csv")
+csv_path = os.path.join(os.path.dirname(__file__), "data", "watches.csv")
+users_csv_path = os.path.join(os.path.dirname(__file__), "data", "users.csv")
+reviews_csv_path = os.path.join(os.path.dirname(__file__), "data", "reviews.csv")
 load_watches_from_csv(csv_path)
 initialize_users(users_csv_path)
 load_reviews_from_csv(reviews_csv_path)
