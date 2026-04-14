@@ -1,5 +1,5 @@
 import pytest
-from backend import *
+from WatchCatalogue.backend import *
 import random
 
 # Tests for all watch sublasses
@@ -96,11 +96,12 @@ class TestCatalogue:
 
     def test_catalogue_delete_watch(self):
         catalogue, watchlist = self.create_test_catalogue(2)
-        catalogue.delete_watch(1)
+        watch_id = 1
+        catalogue.delete_watch(watch_id)
         assert len(catalogue.watches) == 1
         for checkwatch in catalogue.watches:
             assert checkwatch != watchlist[1]
-        watch_id = 1
+
         with pytest.raises(ValueError, match=f"Watch with ID {watch_id} not found."):
             catalogue.delete_watch(watch_id)
 
@@ -155,17 +156,32 @@ class TestAdmin:
             raise Exception
 
 # Tests for session manager errors
-class TestSessionManager:
-    def test_sessionmanager_creation(self):
-        SessionManager()
+class TestReview:
+    def test_review_creation(self):
+        Review(None, None, None, None, None, None, None)
 
-    def test_sessionmanager_init(self):
-        session = SessionManager()
-        assert session.current_user is None
+    def test_review_init(self):
+        i = random_bytes(7, 4)
+        review = Review(i[0], i[1], i[2], i[3], i[4], i[5], i[6])
+        assert review.review_id == i[0]
+        assert review.watch_id == i[1]
+        assert review.username == i[2]
+        assert review.rating == i[3]
+        assert review.title == i[4]
+        assert review.body == i[5]
+        assert review.timestamp == i[6]
 
-    def test_sessionmanager_login(self):
-        pass
-        # user = User(0, random_bytes())
+    def test_review_to_dict(self):
+        i = random_bytes(7, 4)
+        review = Review(i[0], i[1], i[2], i[3], i[4], i[5], i[6])
+        dict = review.to_dict()
+        assert dict.get("review_id") == i[0]
+        assert dict.get("watch_id") == i[1]
+        assert dict.get("username") == i[2]
+        assert dict.get("rating") == i[3]
+        assert dict.get("title") == i[4]
+        assert dict.get("body") == i[5]
+        assert dict.get("timestamp") == i[6]
 
 # Generates a watch with random data
 def watch_random_data(watch_id, bytes_amount=8):
