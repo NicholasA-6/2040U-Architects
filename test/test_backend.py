@@ -155,7 +155,7 @@ class TestAdmin:
         except PermissionError:
             raise Exception
 
-# Tests for session manager errors
+# Tests for review functions
 class TestReview:
     def test_review_creation(self):
         Review(None, None, None, None, None, None, None)

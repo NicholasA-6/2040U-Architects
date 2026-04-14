@@ -5,23 +5,30 @@ import shutil
 from WatchCatalogue import app
 from WatchCatalogue.backend import *
 
-
+# Creates an instance of the Flask app for testing
 @pytest.fixture()
 def app_create():
     app_created = app.app_start()
     yield app_created
 
+# Creates a test client for the Flask app for testing
 @pytest.fixture()
 def client(app_create):
     return app_create.test_client()
 
-def test_request_example(client):
-    response = client.get("/login")
-
+# Tests starting the app
 def test_start_app():
     app_instance = app.app_start()
     assert type(app_instance) == Flask
 
+# Generates a test response from the client
+def test_request_example():
+    app_instance = app.app_start()
+    client = app_instance.test_client()
+    response = client.get("")
+    print(response)
+
+# Tests loading the watch data from the database
 def test_load_watches_from_csv():
     shutil.copyfile(app.csv_path, "./test/testwatches.csv")
     catalogue = Catalogue()
@@ -40,6 +47,7 @@ def test_load_watches_from_csv():
                         assert data[6] == watch.condition
                         assert data[7] == watch.image_url
 
+# Tests saving the watches to the database
 def test_save_watches_to_csv():
     shutil.copyfile(app.csv_path, "./test/testwatches.csv")
     catalogue = Catalogue()
@@ -60,7 +68,7 @@ def test_save_watches_to_csv():
                     assert data[6] == watch.condition
                     assert data[7] == watch.image_url
 
-
+# Tests loading the users from the database
 def test_load_users_from_csv():
     shutil.copyfile(app.users_csv_path, "./test/testusers.csv")
     loaded_users = app.load_users_from_csv("./test/testusers.csv")
@@ -72,6 +80,7 @@ def test_load_users_from_csv():
                     if data[1] == user:
                         assert True
 
+# Tests initializing the users on program start
 def test_initialize_users():
     shutil.copyfile(app.users_csv_path, "./test/testusers.csv")
     users = app.initialize_users("./test/testusers.csv")
@@ -83,6 +92,7 @@ def test_initialize_users():
                     if data[1] == user:
                         assert True
 
+# Tests initializing users when no users exist in database
 def test_initialize_users_blank():
     shutil.copyfile("./test/blank.csv", "./test/testusers.csv")
     users = app.initialize_users("./test/testusers.csv")
@@ -94,6 +104,7 @@ def test_initialize_users_blank():
                     if data[1] == user:
                         assert True
 
+# Tests similar watches functionality
 def test_get_similar_watches_number():
     shutil.copyfile(app.csv_path, "./test/testwatches.csv")
     catalogue = Catalogue()
@@ -102,6 +113,7 @@ def test_get_similar_watches_number():
     similar_watches = app.get_similar_watches(watch, catalogue.watches, 5)
     assert len(similar_watches) == 5
 
+# Tests similar watches are rated by similarity properly
 def test_get_similar_watches_similarity():
     shutil.copyfile(app.csv_path, "./test/testwatches.csv")
     catalogue = Catalogue()
@@ -117,6 +129,7 @@ def test_get_similar_watches_similarity():
     assert watch2 in similar_watches
     assert watch3 in similar_watches
 
+# Tests watches with same data are perfectly similar
 def test_get_similar_watches_priority():
     shutil.copyfile(app.csv_path, "./test/testwatches.csv")
     catalogue = Catalogue()
